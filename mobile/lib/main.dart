@@ -29,9 +29,10 @@ class HomeScreen extends StatelessWidget {
       ),
       body: const Center(
         child: Text(
-          "Welcome to TalkNexa 🚀",
+          "Welcome to TalkNexa 🚀\nLet's Speak English!",
+          textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 24,
+            fontSize: 26,
             fontWeight: FontWeight.bold,
           ),
         ),
