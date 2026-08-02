@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
+import '../features/splash/presentation/splash_screen.dart';
 
 class TalkNexaApp extends StatelessWidget {
   const TalkNexaApp({super.key});
@@ -13,13 +14,7 @@ class TalkNexaApp extends StatelessWidget {
 
       theme: AppTheme.lightTheme,
 
-      home: const Scaffold(
-        body: Center(
-          child: Text(
-            'TalkNexa',
-          ),
-        ),
-      ),
+      home: const SplashScreen(),
     );
   }
 }

@@ -1,0 +1,19 @@
+import 'package:flutter/material.dart';
+
+class OnboardingScreen extends StatelessWidget {
+  const OnboardingScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Text(
+            "Welcome to TalkNexa",
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+        ),
+      ),
+    );
+  }
+}
