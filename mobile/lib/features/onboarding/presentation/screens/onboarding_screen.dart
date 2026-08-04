@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/features/authentication/presentation/screens/login_screen.dart';
 import 'package:mobile/features/onboarding/presentation/models/onboarding_model.dart';
 import 'package:mobile/features/onboarding/presentation/widgets/onboarding_page.dart';
 import 'package:mobile/features/onboarding/presentation/widgets/page_indicator.dart';
+
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -85,7 +87,12 @@ Widget build(BuildContext context) {
 
                     if (currentPage == 2) {
 
-                      // Navigate later
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const LoginScreen(),
+                          ),
+                        );
 
                     } else {
 
