@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:mobile/core/constants/app_assets.dart';
+import 'package:mobile/core/constants/app_strings.dart';
 import 'package:mobile/features/onboarding/presentation/screens/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -94,14 +96,14 @@ class _SplashScreenState extends State<SplashScreen>
                 children: [
 
                   Image.asset(
-                    "assets/images/talknexa_logo.png",
+                    AppAssets.logo,
                     height: 120,
                   ),
 
                   const SizedBox(height: 25),
 
                   const Text(
-                    "TalkNexa",
+                    AppStrings.appName,
                     style: TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
@@ -112,7 +114,7 @@ class _SplashScreenState extends State<SplashScreen>
                   const SizedBox(height: 12),
 
                   const Text(
-                    "Your AI English Speaking Partner",
+                    AppStrings.tagline,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 18,
