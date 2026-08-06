@@ -12,7 +12,7 @@ class PrimaryTextField extends StatelessWidget {
     super.key,
     required this.hint,
     required this.icon,
-    this.obscureText = false,
+    this.obscureText = false, required TextEditingController controller,
   });
 
   @override

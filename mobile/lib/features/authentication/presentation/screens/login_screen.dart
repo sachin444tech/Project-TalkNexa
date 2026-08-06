@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/features/authentication/application/auth_contoller.dart';
+
+import '../../application/auth_state.dart';
 
 import '../../../../shared/widgets/ai/ai_background.dart';
 import '../../../../shared/widgets/app_spacing.dart';
@@ -9,43 +13,51 @@ import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/cards/glass_card.dart';
 import '../../../../shared/widgets/textfields/primary_textfield.dart';
 
-class LoginScreen extends StatelessWidget {
-
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final state = ref.watch(authControllerProvider);
 
     return Scaffold(
-
       body: AIBackground(
-
         child: SafeArea(
-
           child: Center(
-
             child: SingleChildScrollView(
-
               padding: const EdgeInsets.all(24),
-
               child: GlassCard(
-
                 child: Column(
-
                   children: [
-
                     const HeroLogo(),
 
                     AppSpacing.h40,
 
-                    const PrimaryTextField(
+                    PrimaryTextField(
+                      controller: emailController,
                       hint: "Email",
                       icon: Icons.email_outlined,
                     ),
 
                     AppSpacing.h20,
 
-                    const PrimaryTextField(
+                    PrimaryTextField(
+                      controller: passwordController,
                       hint: "Password",
                       icon: Icons.lock_outline,
                       obscureText: true,
@@ -54,8 +66,19 @@ class LoginScreen extends StatelessWidget {
                     AppSpacing.h32,
 
                     PrimaryButton(
-                      title: "Continue",
-                      onPressed: () {},
+                      title: state.status == AuthStatus.loading
+                          ? "Signing In..."
+                          : "Continue",
+                      onPressed: state.status == AuthStatus.loading
+                          ? null
+                          : () {
+                              ref
+                                  .read(authControllerProvider.notifier)
+                                  .login(
+                                    email: emailController.text.trim(),
+                                    password: passwordController.text,
+                                  );
+                            },
                     ),
 
                     AppSpacing.h24,
@@ -85,23 +108,13 @@ class LoginScreen extends StatelessWidget {
                         "Create Account",
                       ),
                     ),
-
                   ],
-
                 ),
-
               ),
-
             ),
-
           ),
-
         ),
-
       ),
-
     );
-
   }
-
 }
