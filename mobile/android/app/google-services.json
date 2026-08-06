@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "431781415997",
+    "project_id": "talknexa-3a442",
+    "storage_bucket": "talknexa-3a442.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:431781415997:android:37a07565d395828bd8ee54",
+        "android_client_info": {
+          "package_name": "com.example.mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "431781415997-78kb6i5cqa355votfvi1am6u1vvmbt34.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJLbI1yn2hn0Kqu_O1clKpUx3nSOPJ_OA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "431781415997-78kb6i5cqa355votfvi1am6u1vvmbt34.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:431781415997:android:b1431a6cc718f8fad8ee54",
+        "android_client_info": {
+          "package_name": "com.talknexa.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "431781415997-78kb6i5cqa355votfvi1am6u1vvmbt34.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJLbI1yn2hn0Kqu_O1clKpUx3nSOPJ_OA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "431781415997-78kb6i5cqa355votfvi1am6u1vvmbt34.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
