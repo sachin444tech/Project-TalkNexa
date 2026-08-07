@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/core/constants/app_assets.dart';
-import 'package:mobile/core/constants/app_strings.dart';
-
 
 class AuthHeader extends StatelessWidget {
   const AuthHeader({super.key});
@@ -9,45 +6,32 @@ class AuthHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [
+      children: const [
 
-        Image.asset(
-          AppAssets.logo,
-          height: 90,
+        Icon(
+          Icons.chat_bubble_rounded,
+          size: 70,
+          color: Color(0xff2563EB),
         ),
 
-        const SizedBox(height: 20),
+        SizedBox(height: 18),
 
-        const Text(
-          AppStrings.appName,
+        Text(
+          "Welcome Back",
           style: TextStyle(
-            fontSize: 34,
+            fontSize: 32,
             fontWeight: FontWeight.bold,
           ),
         ),
 
-        const SizedBox(height: 8),
+        SizedBox(height: 10),
 
-        const Text(
-          AppStrings.tagline,
-          textAlign: TextAlign.center,
-        ),
-
-        const SizedBox(height: 24),
-
-        const Text(
-          "Welcome Back!",
+        Text(
+          "Continue your English journey",
           style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: Colors.grey,
           ),
-        ),
-
-        const SizedBox(height: 12),
-
-        const Text(
-          "Continue your journey to confident English speaking.",
-          textAlign: TextAlign.center,
         ),
       ],
     );
