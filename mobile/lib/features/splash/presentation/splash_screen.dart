@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:mobile/app/app_gate.dart';
 import 'package:mobile/core/constants/app_assets.dart';
 import 'package:mobile/core/constants/app_strings.dart';
-import 'package:mobile/features/onboarding/presentation/screens/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -54,7 +54,7 @@ class _SplashScreenState extends State<SplashScreen>
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => const OnboardingScreen(),
+            builder: (_) => const AuthGate(),
           ),
         );
       },

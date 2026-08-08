@@ -10,6 +10,7 @@ import 'package:mobile/features/authentication/presentation/widgets/auth_hearder
 import 'package:mobile/features/authentication/presentation/widgets/email_field.dart';
 import 'package:mobile/features/authentication/presentation/widgets/password_field.dart';
 import 'package:mobile/features/authentication/presentation/widgets/social_login_button.dart';
+import 'package:mobile/features/home/presentation/screens/home_screen.dart';
 
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -45,8 +46,16 @@ class _LoginScreenState
             ),
           );
 
-          // Home navigation will be added
-          // in the next lesson.
+          // Home navigation will be added here
+          if (next.status == AuthStatus.authenticated) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const HomeScreen(),
+                ),
+                (route) => false,
+                );
+              }
         }
 
         if (next.status == AuthStatus.error) {
