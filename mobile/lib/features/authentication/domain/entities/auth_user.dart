@@ -1,13 +1,11 @@
 class AuthUser {
   final String id;
-  final String name;
-  final String email;
-  final String? photoUrl;
+  final String? email;
+  final String? displayName;
 
   const AuthUser({
     required this.id,
-    required this.name,
-    required this.email,
-    this.photoUrl,
+    this.email,
+    this.displayName, Object? name, Object? photoUrl,
   });
 }

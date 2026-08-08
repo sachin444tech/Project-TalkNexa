@@ -1,87 +1,58 @@
-import 'package:mobile/features/authentication/data/models/auth_user_model.dart';
-import 'package:mobile/features/authentication/data/services/firebase_auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../domain/entities/auth_user.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../services/firebase_auth_service.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  final FirebaseAuthService service = FirebaseAuthService();
-  
-   @override
-Future<AuthUser?> currentUser() async {
-  final user = service.currentUser;
+  final FirebaseAuthService _authService;
 
-  if (user == null) {
-    return null;
-  }
-
-  return AuthUserModel.fromFirebase(
-    user.uid,
-    user.displayName,
-    user.email!,
-    user.photoURL,
-  );
-}
+  AuthRepositoryImpl({
+    FirebaseAuthService? authService,
+  }) : _authService =
+            authService ?? FirebaseAuthService();
 
   @override
-Future<void> logout() async {
-  await service.logout();
-}
+  Future<AuthUser?> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    final credential =
+        await _authService.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    final user = credential.user;
+
+    if (user == null) {
+      return null;
+    }
+
+    return AuthUser(
+      id: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+    );
+  }
 
   @override
-Future<AuthUser?> register({
-  required String email,
-  required String password,
-  required String name,
-}) async {
-  final credential = await service.register(
-    email: email,
-    password: password,
-  );
-
-  final user = credential.user;
-
-  if (user == null) {
-    return null;
+  Future<void> signOut() {
+    return _authService.signOut();
   }
 
-  // Save the user's display name in Firebase Authentication
-  await user.updateDisplayName(name);
+  @override
+  AuthUser? getCurrentUser() {
+    final user = _authService.getCurrentUser();
 
-  // Reload the user so the updated display name is available
-  await user.reload();
+    if (user == null) {
+      return null;
+    }
 
-  final updatedUser = service.currentUser!;
-
-  return AuthUserModel.fromFirebase(
-    updatedUser.uid,
-    updatedUser.displayName,
-    updatedUser.email!,
-    updatedUser.photoURL,
-  );
-}
-
- @override
-Future<AuthUser?> signIn({
-  required String email,
-  required String password,
-}) async {
-  final credential = await service.signIn(
-    email: email,
-    password: password,
-  );
-
-  final user = credential.user;
-
-  if (user == null) {
-    return null;
+    return AuthUser(
+      id: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+    );
   }
-
-  return AuthUserModel.fromFirebase(
-    user.uid,
-    user.displayName,
-    user.email!,
-    user.photoURL,
-  );
- }
 }

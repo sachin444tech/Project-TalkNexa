@@ -8,28 +8,25 @@ enum AuthStatus {
 
 class AuthState {
   final AuthStatus status;
-  final String? message;
+  final String? errorMessage;
 
   const AuthState({
-    required this.status,
-    this.message,
+    this.status = AuthStatus.initial,
+    this.errorMessage,
   });
 
-  factory AuthState.initial() =>
-      const AuthState(status: AuthStatus.initial);
+  AuthState copyWith({
+    AuthStatus? status,
+    String? errorMessage,
+  }) {
+    return AuthState(
+      status: status ?? this.status,
+      errorMessage: errorMessage,
+    );
+  }
 
-  factory AuthState.loading() =>
-      const AuthState(status: AuthStatus.loading);
+  bool get isLoading => status == AuthStatus.loading;
 
-  factory AuthState.authenticated() =>
-      const AuthState(status: AuthStatus.authenticated);
-
-  factory AuthState.unauthenticated() =>
-      const AuthState(status: AuthStatus.unauthenticated);
-
-  factory AuthState.error(String message) =>
-      AuthState(
-        status: AuthStatus.error,
-        message: message,
-      );
+  bool get isAuthenticated =>
+      status == AuthStatus.authenticated;
 }
