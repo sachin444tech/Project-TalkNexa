@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 
 import 'package:mobile/app/theme/app_colors.dart';
+import 'package:mobile/features/ai_practice/presentation/screens/ai_speaking_screen.dart';
 import '../models/practice_scenario.dart';
 import '../widgets/difficulty_selector.dart';
 import '../widgets/duration_selector.dart';
@@ -88,21 +89,21 @@ class _AiPracticeSetupScreenState
     ),
   ];
 
-  void _startPractice() {
-    final scenario =
-        scenarios[selectedScenario];
+ void _startPractice() {
+  final scenario =
+      scenarios[selectedScenario];
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${scenario.title} • '
-          '$selectedDifficulty • '
-          '$selectedDuration min',
-        ),
-        behavior: SnackBarBehavior.floating,
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => AiSpeakingScreen(
+        scenario: scenario.title,
+        difficulty: selectedDifficulty,
+        duration: selectedDuration,
       ),
-    );
-  }
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
