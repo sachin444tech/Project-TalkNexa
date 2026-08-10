@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 
+import 'package:mobile/features/ai_practice/presentation/screens/ai_practice_setup_screen.dart';
 import 'package:mobile/features/home/presentation/widgets/achievement_preview.dart';
 import 'package:mobile/features/home/presentation/widgets/daily_goal_card.dart';
 import 'package:mobile/features/home/presentation/widgets/home_header.dart';
@@ -49,14 +50,17 @@ class HomeScreen extends StatelessWidget {
 
                     const SizedBox(height: 28),
 
-                    SpeakingHeroCard(
-                      onStartSpeaking: () {
-                        _showComingSoon(
-                          context,
-                          'AI Speaking Practice',
-                        );
-                      },
-                    ),
+                   SpeakingHeroCard(
+                     onStartSpeaking: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              const AiPracticeSetupScreen(),
+                              ),
+                            );
+                          },
+                      ),
 
                     const SizedBox(height: 28),
 
@@ -94,11 +98,14 @@ class HomeScreen extends StatelessWidget {
                               Color(0xFF2563EB),
                               Color(0xFF0EA5E9),
                             ],
-                            onTap: () {
-                              _showComingSoon(
-                                context,
-                                'AI Partner',
-                              );
+                           onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                     const AiPracticeSetupScreen(),
+                                  ),
+                               );
                             },
                           ),
                         ),
