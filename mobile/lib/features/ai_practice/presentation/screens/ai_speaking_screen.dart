@@ -3,12 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:mobile/app/theme/app_colors.dart';
+import 'package:mobile/features/ai_practice/domain/models/chat_message.dart';
+import 'package:mobile/features/ai_practice/domain/models/speaking_state.dart';
 import 'package:mobile/features/ai_practice/domain/services/microphone_service.dart';
-import '../../domain/models/chat_message.dart';
-import '../../domain/models/speaking_state.dart';
-import '../widgets/ai_partner_avatar.dart';
-import '../widgets/chat_message_bubble.dart';
-import '../widgets/mic_control.dart';
+import 'package:mobile/features/ai_practice/domain/services/speech_recognition_service.dart';
+import 'package:mobile/features/ai_practice/presentation/widgets/ai_partner_avatar.dart';
+import 'package:mobile/features/ai_practice/presentation/widgets/chat_message_bubble.dart';
+import 'package:mobile/features/ai_practice/presentation/widgets/mic_control.dart';
+
+
 
 class AiSpeakingScreen extends StatefulWidget {
   final String scenario;
@@ -34,11 +37,115 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   final MicrophoneService _microphoneService = 
       MicrophoneService();
 
+  final SpeechRecognitionService _speechRecognitionService =
+    SpeechRecognitionService();
+
   final List<ChatMessage> _messages = [];
 
   Timer? _timer;
 
   late int _remainingSeconds;
+
+  void _handleSpeechResult(
+    String text,
+    bool isFinal,
+  ) {
+  if (!mounted) return;
+
+  if (text.trim().isEmpty) {
+    return;
+  }
+
+  if (!isFinal) {
+    return;
+  }
+
+  _addUserMessage(text);
+ }
+
+  void _addUserMessage(String text) {
+  setState(() {
+    _messages.add(
+      ChatMessage(
+        id: DateTime.now()
+            .millisecondsSinceEpoch
+            .toString(),
+        text: text,
+        sender: MessageSender.user,
+        timestamp: DateTime.now(),
+      ),
+    );
+
+    _speakingState =
+        SpeakingState.processing;
+  });
+
+  _processUserMessage(text);
+} 
+
+ Future<void> _processUserMessage(
+  String userText,
+) async {
+  await Future.delayed(
+    const Duration(seconds: 2),
+  );
+
+  if (!mounted) return;
+
+  final response =
+      _generateTemporaryAiResponse(userText);
+
+  setState(() {
+    _messages.add(
+      ChatMessage(
+        id: DateTime.now()
+            .millisecondsSinceEpoch
+            .toString(),
+        text: response,
+        sender: MessageSender.ai,
+        timestamp: DateTime.now(),
+      ),
+    );
+
+    _speakingState =
+        SpeakingState.aiSpeaking;
+  });
+
+  await Future.delayed(
+    const Duration(seconds: 2),
+  );
+
+  if (!mounted) return;
+
+  setState(() {
+    _speakingState =
+        SpeakingState.idle;
+  });
+}
+
+ String _generateTemporaryAiResponse(
+  String userText,
+) {
+  final lowerText =
+      userText.toLowerCase();
+
+  if (lowerText.contains('hello') ||
+      lowerText.contains('hi')) {
+    return 'Hello! It is great to hear you. Tell me more about yourself.';
+  }
+
+  if (lowerText.contains('college') ||
+      lowerText.contains('study')) {
+    return 'That sounds interesting. What do you enjoy most about your studies?';
+  }
+
+  if (lowerText.contains('job') ||
+      lowerText.contains('work')) {
+    return 'Great! Tell me more about your work and what you enjoy doing.';
+  }
+
+  return 'That is interesting! Could you explain a little more about that?';
+}
 
   @override
   void initState() {
@@ -169,15 +276,23 @@ void _showMicrophoneError() {
 
   Future<void> _startListening() async {
   try {
-    final hasPermission =
-        await _microphoneService.hasPermission();
+    final available =
+        await _speechRecognitionService.initialize();
 
-    if (!hasPermission) {
-      _showMicrophonePermissionMessage();
+    if (!available) {
+      _showSpeechRecognitionError();
       return;
     }
 
-    await _microphoneService.startRecording();
+    final started =
+        await _speechRecognitionService.startListening(
+      onResult: _handleSpeechResult,
+    );
+
+    if (!started) {
+      _showSpeechRecognitionError();
+      return;
+    }
 
     if (!mounted) return;
 
@@ -188,13 +303,13 @@ void _showMicrophoneError() {
   } catch (e) {
     if (!mounted) return;
 
-    _showMicrophoneError();
+    _showSpeechRecognitionError();
   }
 }
 
   Future<void> _stopListening() async {
   try {
-    await _microphoneService.stopRecording();
+    await _speechRecognitionService.stopListening();
 
     if (!mounted) return;
 
@@ -202,32 +317,6 @@ void _showMicrophoneError() {
       _speakingState =
           SpeakingState.processing;
     });
-
-    Future.delayed(
-      const Duration(seconds: 2),
-      () {
-        if (!mounted) return;
-
-        _addSimulatedConversation();
-
-        setState(() {
-          _speakingState =
-              SpeakingState.aiSpeaking;
-        });
-
-        Future.delayed(
-          const Duration(seconds: 2),
-          () {
-            if (!mounted) return;
-
-            setState(() {
-              _speakingState =
-                  SpeakingState.idle;
-            });
-          },
-        );
-      },
-    );
   } catch (e) {
     if (!mounted) return;
 
@@ -236,36 +325,21 @@ void _showMicrophoneError() {
           SpeakingState.idle;
     });
 
-    _showMicrophoneError();
+    _showSpeechRecognitionError();
   }
+} 
+
+  void _showSpeechRecognitionError() {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text(
+        'Speech recognition is not available. '
+        'Please check your microphone and speech settings.',
+      ),
+    ),
+  );
 }
 
-  void _addSimulatedConversation() {
-    _messages.add(
-      ChatMessage(
-        id: DateTime.now()
-            .millisecondsSinceEpoch
-            .toString(),
-        text:
-            'I would like to tell you about my day.',
-        sender: MessageSender.user,
-        timestamp: DateTime.now(),
-      ),
-    );
-
-    _messages.add(
-      ChatMessage(
-        id: (DateTime.now()
-                    .millisecondsSinceEpoch +
-                1)
-            .toString(),
-        text:
-            'That sounds interesting! Tell me more. What was the best part of your day?',
-        sender: MessageSender.ai,
-        timestamp: DateTime.now(),
-      ),
-    );
-  }
 
   void _endSession() {
     _timer?.cancel();
@@ -301,6 +375,7 @@ void _showMicrophoneError() {
   void dispose() {
     _timer?.cancel();
     _microphoneService.dispose();
+    _speechRecognitionService.dispose();
     super.dispose();
   }
 

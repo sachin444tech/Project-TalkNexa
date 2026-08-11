@@ -58,6 +58,8 @@ dependencies:
   intl: ^0.20.2
 
   record: ^6.0.0
+  
+  speech_to_text: ^7.4.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
