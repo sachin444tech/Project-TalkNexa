@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:mobile/app/theme/app_colors.dart';
+import 'package:mobile/features/ai_practice/domain/services/microphone_service.dart';
 import '../../domain/models/chat_message.dart';
 import '../../domain/models/speaking_state.dart';
 import '../widgets/ai_partner_avatar.dart';
@@ -26,10 +27,12 @@ class AiSpeakingScreen extends StatefulWidget {
       _AiSpeakingScreenState();
 }
 
-class _AiSpeakingScreenState
-    extends State<AiSpeakingScreen> {
+class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   SpeakingState _speakingState =
       SpeakingState.idle;
+
+  final MicrophoneService _microphoneService = 
+      MicrophoneService();
 
   final List<ChatMessage> _messages = [];
 
@@ -47,6 +50,47 @@ class _AiSpeakingScreenState
 
     _startTimer();
   }
+
+  void _showMicrophonePermissionMessage() {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text(
+          'Microphone Permission',
+        ),
+        content: const Text(
+          'TalkNexa needs microphone access '
+          'so you can practice speaking.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Try Again'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+void _showMicrophoneError() {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text(
+        'Unable to access the microphone.',
+      ),
+    ),
+  );
+}
 
   void _addInitialMessage() {
     _messages.add(
@@ -123,14 +167,37 @@ class _AiSpeakingScreenState
     }
   }
 
-  void _startListening() {
+  Future<void> _startListening() async {
+  try {
+    final hasPermission =
+        await _microphoneService.hasPermission();
+
+    if (!hasPermission) {
+      _showMicrophonePermissionMessage();
+      return;
+    }
+
+    await _microphoneService.startRecording();
+
+    if (!mounted) return;
+
     setState(() {
       _speakingState =
           SpeakingState.listening;
     });
-  }
+  } catch (e) {
+    if (!mounted) return;
 
-  void _stopListening() {
+    _showMicrophoneError();
+  }
+}
+
+  Future<void> _stopListening() async {
+  try {
+    await _microphoneService.stopRecording();
+
+    if (!mounted) return;
+
     setState(() {
       _speakingState =
           SpeakingState.processing;
@@ -161,7 +228,17 @@ class _AiSpeakingScreenState
         );
       },
     );
+  } catch (e) {
+    if (!mounted) return;
+
+    setState(() {
+      _speakingState =
+          SpeakingState.idle;
+    });
+
+    _showMicrophoneError();
   }
+}
 
   void _addSimulatedConversation() {
     _messages.add(
@@ -223,6 +300,7 @@ class _AiSpeakingScreenState
   @override
   void dispose() {
     _timer?.cancel();
+    _microphoneService.dispose();
     super.dispose();
   }
 
