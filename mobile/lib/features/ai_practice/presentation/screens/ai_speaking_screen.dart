@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:mobile/app/theme/app_colors.dart';
+import 'package:mobile/features/ai_practice/domain/models/ai_conversation_context.dart';
 import 'package:mobile/features/ai_practice/domain/models/chat_message.dart';
 import 'package:mobile/features/ai_practice/domain/models/speaking_state.dart';
+import 'package:mobile/features/ai_practice/domain/services/ai_conversation_service.dart';
 import 'package:mobile/features/ai_practice/domain/services/microphone_service.dart';
 import 'package:mobile/features/ai_practice/domain/services/speech_recognition_service.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/ai_partner_avatar.dart';
@@ -39,6 +41,9 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
   final SpeechRecognitionService _speechRecognitionService =
     SpeechRecognitionService();
+
+  final AiConversationService _aiConversationService = 
+    AiConversationService();
 
   final List<ChatMessage> _messages = [];
 
@@ -83,69 +88,68 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   _processUserMessage(text);
 } 
 
- Future<void> _processUserMessage(
+Future<void> _processUserMessage(
   String userText,
 ) async {
-  await Future.delayed(
-    const Duration(seconds: 2),
-  );
-
   if (!mounted) return;
 
-  final response =
-      _generateTemporaryAiResponse(userText);
-
   setState(() {
-    _messages.add(
-      ChatMessage(
-        id: DateTime.now()
-            .millisecondsSinceEpoch
-            .toString(),
-        text: response,
-        sender: MessageSender.ai,
-        timestamp: DateTime.now(),
-      ),
+    _speakingState =
+        SpeakingState.processing;
+  });
+
+  try {
+    final context = AiConversationContext(
+      scenario: widget.scenario,
+      difficulty: widget.difficulty,
+      userLevel: 'Intermediate',
     );
 
-    _speakingState =
-        SpeakingState.aiSpeaking;
-  });
+    final response = await _aiConversationService.generateResponse(
+      userMessage: userText,
+      context: context,
+      );
 
-  await Future.delayed(
-    const Duration(seconds: 2),
-  );
+    if (!mounted) return;
 
-  if (!mounted) return;
+    setState(() {
+      _messages.add(
+        ChatMessage(
+          id: DateTime.now()
+              .millisecondsSinceEpoch
+              .toString(),
+          text: response,
+          sender: MessageSender.ai,
+          timestamp: DateTime.now(),
+        ),
+      );
 
-  setState(() {
-    _speakingState =
-        SpeakingState.idle;
-  });
+      _speakingState =
+          SpeakingState.aiSpeaking;
+    });
+
+    await Future.delayed(
+      const Duration(seconds: 2),
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _speakingState =
+          SpeakingState.idle;
+    });
+  } catch (e) {
+    if (!mounted) return;
+
+    setState(() {
+      _speakingState =
+          SpeakingState.idle;
+    });
+
+    _showAiError();
+  }
 }
 
- String _generateTemporaryAiResponse(
-  String userText,
-) {
-  final lowerText =
-      userText.toLowerCase();
-
-  if (lowerText.contains('hello') ||
-      lowerText.contains('hi')) {
-    return 'Hello! It is great to hear you. Tell me more about yourself.';
-  }
-
-  if (lowerText.contains('college') ||
-      lowerText.contains('study')) {
-    return 'That sounds interesting. What do you enjoy most about your studies?';
-  }
-
-  if (lowerText.contains('job') ||
-      lowerText.contains('work')) {
-    return 'Great! Tell me more about your work and what you enjoy doing.';
-  }
-
-  return 'That is interesting! Could you explain a little more about that?';
-}
 
   @override
   void initState() {
@@ -335,6 +339,17 @@ void _showMicrophoneError() {
       content: Text(
         'Speech recognition is not available. '
         'Please check your microphone and speech settings.',
+      ),
+    ),
+  );
+}
+
+
+void _showAiError() {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text(
+        'Something went wrong while generating the AI response.',
       ),
     ),
   );
