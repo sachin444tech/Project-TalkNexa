@@ -139,6 +139,7 @@ Future<void> _processUserMessage(
           SpeakingState.idle;
     });
   } catch (e) {
+    debugPrint('❌ AI ERROR: $e');
     if (!mounted) return;
 
     setState(() {
