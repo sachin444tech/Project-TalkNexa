@@ -1,18 +1,62 @@
+const { GoogleGenAI } = require("@google/genai");
+
+const aiConfig = require("../config/ai.config");
+
 class AiService {
+  constructor() {
+    if (!process.env.AI_API_KEY) {
+      throw new Error("AI_API_KEY is not configured.");
+    }
+
+    this.ai = new GoogleGenAI({
+      apiKey: process.env.AI_API_KEY,
+    });
+  }
+
   async generateResponse({
     message,
     scenario,
     difficulty,
     userLevel,
   }) {
-    // Temporary fallback response.
-    //
-    // The real AI provider will be connected
-    // here in the next stage.
+    const prompt = `
+You are TalkNexa, an AI English speaking partner.
+
+Your job is to help English learners practice speaking naturally.
+
+Practice scenario:
+${scenario}
+
+Difficulty:
+${difficulty}
+
+User English level:
+${userLevel}
+
+Important behavior:
+- Speak naturally and conversationally.
+- Keep your response appropriate for the user's English level.
+- Encourage the learner to continue speaking.
+- Do not give long explanations unless necessary.
+- If the user's English has a clear mistake, gently correct it.
+- Prefer conversation over teaching a long grammar lesson.
+- Stay within the selected scenario.
+- Never pretend to be a human.
+- Be friendly, supportive, and patient.
+
+User's message:
+${message}
+
+Respond as the TalkNexa AI speaking partner.
+`;
+
+    const response = await this.ai.models.generateContent({
+      model: aiConfig.model,
+      contents: prompt,
+    });
 
     return {
-      response:
-        "That's interesting! Could you tell me more about that?",
+      response: response.text,
       scenario,
       difficulty,
       userLevel,
