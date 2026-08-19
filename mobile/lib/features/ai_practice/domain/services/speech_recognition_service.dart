@@ -18,8 +18,7 @@ class SpeechRecognitionService {
   }
 
   Future<bool> startListening({
-    required void Function(String text, bool isFinal)
-        onResult,
+    required void Function(String text, bool isFinal) onResult,
   }) async {
     final available = await initialize();
 
@@ -29,10 +28,7 @@ class SpeechRecognitionService {
 
     await _speechToText.listen(
       onResult: (result) {
-        onResult(
-          result.recognizedWords,
-          result.finalResult,
-        );
+        onResult(result.recognizedWords, result.finalResult);
       },
       listenOptions: SpeechListenOptions(
         partialResults: true,

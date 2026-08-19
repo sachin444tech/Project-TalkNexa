@@ -10,13 +10,7 @@ class HeroLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Hero(
-          tag: "logo",
-          child: Image.asset(
-            AppAssets.logo,
-            height: 80,
-          ),
-        ),
+        Hero(tag: "logo", child: Image.asset(AppAssets.logo, height: 80)),
         const SizedBox(height: 16),
         const Text(
           AppStrings.appName,

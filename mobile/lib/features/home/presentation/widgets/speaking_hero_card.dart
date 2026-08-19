@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
 
-
 import 'package:mobile/app/theme/app_colors.dart';
-
 
 class SpeakingHeroCard extends StatelessWidget {
   final VoidCallback onStartSpeaking;
 
-  const SpeakingHeroCard({
-    super.key,
-    required this.onStartSpeaking,
-  });
+  const SpeakingHeroCard({super.key, required this.onStartSpeaking});
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +13,7 @@ class SpeakingHeroCard extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            AppColors.primary,
-            Color(0xFF0EA5E9),
-          ],
+          colors: [AppColors.primary, Color(0xFF0EA5E9)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -45,9 +37,7 @@ class SpeakingHeroCard extends StatelessWidget {
                   vertical: 7,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(
-                    alpha: 0.16,
-                  ),
+                  color: Colors.white.withValues(alpha: 0.16),
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: const Row(
@@ -78,15 +68,10 @@ class SpeakingHeroCard extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(
-                    alpha: 0.15,
-                  ),
+                  color: Colors.white.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.mic_none_rounded,
-                  color: Colors.white,
-                ),
+                child: const Icon(Icons.mic_none_rounded, color: Colors.white),
               ),
             ],
           ),
@@ -108,11 +93,7 @@ class SpeakingHeroCard extends StatelessWidget {
 
           const Text(
             'Practice real conversations and build your confidence one conversation at a time.',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
-              height: 1.5,
-            ),
+            style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.5),
           ),
 
           const SizedBox(height: 22),
@@ -122,15 +103,10 @@ class SpeakingHeroCard extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: onStartSpeaking,
-              icon: const Icon(
-                Icons.play_arrow_rounded,
-              ),
+              icon: const Icon(Icons.play_arrow_rounded),
               label: const Text(
                 'Start Speaking',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,

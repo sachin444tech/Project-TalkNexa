@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class SocialButton extends StatelessWidget {
-
   final IconData icon;
 
   final String title;
@@ -9,7 +8,6 @@ class SocialButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   const SocialButton({
-
     super.key,
 
     required this.icon,
@@ -17,30 +15,22 @@ class SocialButton extends StatelessWidget {
     required this.title,
 
     required this.onPressed,
-
   });
 
   @override
   Widget build(BuildContext context) {
-
     return SizedBox(
-
       width: double.infinity,
 
       height: 58,
 
       child: OutlinedButton.icon(
-
         onPressed: onPressed,
 
         icon: Icon(icon),
 
         label: Text(title),
-
       ),
-
     );
-
   }
-
 }

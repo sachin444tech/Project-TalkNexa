@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 import 'package:mobile/app/theme/app_colors.dart';
 import '../models/practice_scenario.dart';
 
@@ -57,11 +56,7 @@ class PracticeScenarioCard extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(
-                  scenario.icon,
-                  color: Colors.white,
-                  size: 25,
-                ),
+                child: Icon(scenario.icon, color: Colors.white, size: 25),
               ),
 
               const SizedBox(width: 15),
@@ -101,9 +96,7 @@ class PracticeScenarioCard extends StatelessWidget {
                 height: 23,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isSelected
-                      ? AppColors.primary
-                      : Colors.transparent,
+                  color: isSelected ? AppColors.primary : Colors.transparent,
                   border: Border.all(
                     color: isSelected
                         ? AppColors.primary

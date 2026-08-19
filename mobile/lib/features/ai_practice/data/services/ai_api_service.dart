@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:mobile/core/config/api_config.dart';
+import 'package:mobile/features/ai_practice/domain/models/chat_message.dart';
 
 class AiApiService {
   Future<String> generateResponse({
@@ -9,36 +10,36 @@ class AiApiService {
     required String scenario,
     required String difficulty,
     required String userLevel,
+    required List<ChatMessage> conversationHistory,
   }) async {
-    final uri = Uri.parse(
-      '${ApiConfig.baseUrl}/api/ai/conversation',
-    );
+    final uri = Uri.parse('${ApiConfig.baseUrl}/api/ai/conversation');
+
+    final history = conversationHistory.map((chatMessage) {
+      return {
+        'role': chatMessage.isUser ? 'user' : 'assistant',
+        'content': chatMessage.text,
+      };
+    }).toList();
 
     final response = await http.post(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'message': message,
         'scenario': scenario,
         'difficulty': difficulty,
         'userLevel': userLevel,
+        'conversationHistory': history,
       }),
     );
 
     if (response.statusCode != 200) {
-      throw Exception(
-        'AI request failed: ${response.statusCode}',
-      );
+      throw Exception('AI request failed: ${response.statusCode}');
     }
 
-    final data =
-        jsonDecode(response.body)
-            as Map<String, dynamic>;
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
 
-    final responseData =
-        data['data'] as Map<String, dynamic>;
+    final responseData = data['data'] as Map<String, dynamic>;
 
     return responseData['response'] as String;
   }

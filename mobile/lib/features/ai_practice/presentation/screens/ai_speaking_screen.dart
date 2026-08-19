@@ -13,8 +13,6 @@ import 'package:mobile/features/ai_practice/presentation/widgets/ai_partner_avat
 import 'package:mobile/features/ai_practice/presentation/widgets/chat_message_bubble.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/mic_control.dart';
 
-
-
 class AiSpeakingScreen extends StatefulWidget {
   final String scenario;
   final String difficulty;
@@ -28,22 +26,18 @@ class AiSpeakingScreen extends StatefulWidget {
   });
 
   @override
-  State<AiSpeakingScreen> createState() =>
-      _AiSpeakingScreenState();
+  State<AiSpeakingScreen> createState() => _AiSpeakingScreenState();
 }
 
 class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
-  SpeakingState _speakingState =
-      SpeakingState.idle;
+  SpeakingState _speakingState = SpeakingState.idle;
 
-  final MicrophoneService _microphoneService = 
-      MicrophoneService();
+  final MicrophoneService _microphoneService = MicrophoneService();
 
   final SpeechRecognitionService _speechRecognitionService =
-    SpeechRecognitionService();
+      SpeechRecognitionService();
 
-  final AiConversationService _aiConversationService = 
-    AiConversationService();
+  final AiConversationService _aiConversationService = AiConversationService();
 
   final List<ChatMessage> _messages = [];
 
@@ -51,106 +45,90 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
   late int _remainingSeconds;
 
-  void _handleSpeechResult(
-    String text,
-    bool isFinal,
-  ) {
-  if (!mounted) return;
-
-  if (text.trim().isEmpty) {
-    return;
-  }
-
-  if (!isFinal) {
-    return;
-  }
-
-  _addUserMessage(text);
- }
-
-  void _addUserMessage(String text) {
-  setState(() {
-    _messages.add(
-      ChatMessage(
-        id: DateTime.now()
-            .millisecondsSinceEpoch
-            .toString(),
-        text: text,
-        sender: MessageSender.user,
-        timestamp: DateTime.now(),
-      ),
-    );
-
-    _speakingState =
-        SpeakingState.processing;
-  });
-
-  _processUserMessage(text);
-} 
-
-Future<void> _processUserMessage(
-  String userText,
-) async {
-  if (!mounted) return;
-
-  setState(() {
-    _speakingState =
-        SpeakingState.processing;
-  });
-
-  try {
-    final context = AiConversationContext(
-      scenario: widget.scenario,
-      difficulty: widget.difficulty,
-      userLevel: 'Intermediate',
-    );
-
-    final response = await _aiConversationService.generateResponse(
-      userMessage: userText,
-      context: context,
-      );
-
+  void _handleSpeechResult(String text, bool isFinal) {
     if (!mounted) return;
 
+    if (text.trim().isEmpty) {
+      return;
+    }
+
+    if (!isFinal) {
+      return;
+    }
+
+    _addUserMessage(text);
+  }
+
+  void _addUserMessage(String text) {
     setState(() {
       _messages.add(
         ChatMessage(
-          id: DateTime.now()
-              .millisecondsSinceEpoch
-              .toString(),
-          text: response,
-          sender: MessageSender.ai,
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          text: text,
+          sender: MessageSender.user,
           timestamp: DateTime.now(),
         ),
       );
 
-      _speakingState =
-          SpeakingState.aiSpeaking;
+      _speakingState = SpeakingState.processing;
     });
 
-    await Future.delayed(
-      const Duration(seconds: 2),
-    );
-
-    if (!mounted) return;
-
-    setState(() {
-      _speakingState =
-          SpeakingState.idle;
-    });
-  } catch (e) {
-    debugPrint('❌ AI ERROR: $e');
-    if (!mounted) return;
-
-    setState(() {
-      _speakingState =
-          SpeakingState.idle;
-    });
-
-    _showAiError();
+    _processUserMessage(text);
   }
-}
 
+  Future<void> _processUserMessage(String userText) async {
+    if (!mounted) return;
+
+    setState(() {
+      _speakingState = SpeakingState.processing;
+    });
+
+    try {
+      final context = AiConversationContext(
+        scenario: widget.scenario,
+        difficulty: widget.difficulty,
+        userLevel: 'Intermediate',
+        messages: List.unmodifiable(_messages),
+      );
+
+      final response = await _aiConversationService.generateResponse(
+        userMessage: userText,
+        context: context,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _messages.add(
+          ChatMessage(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            text: response,
+            sender: MessageSender.ai,
+            timestamp: DateTime.now(),
+          ),
+        );
+
+        _speakingState = SpeakingState.aiSpeaking;
+      });
+
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (!mounted) return;
+
+      setState(() {
+        _speakingState = SpeakingState.idle;
+      });
+    } catch (e) {
+      debugPrint('❌ AI ERROR: $e');
+      if (!mounted) return;
+
+      setState(() {
+        _speakingState = SpeakingState.idle;
+      });
+
+      _showAiError();
+    }
+  }
 
   @override
   void initState() {
@@ -164,52 +142,44 @@ Future<void> _processUserMessage(
   }
 
   void _showMicrophonePermissionMessage() {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text(
-          'Microphone Permission',
-        ),
-        content: const Text(
-          'TalkNexa needs microphone access '
-          'so you can practice speaking.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text('Cancel'),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Microphone Permission'),
+          content: const Text(
+            'TalkNexa needs microphone access '
+            'so you can practice speaking.',
           ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text('Try Again'),
-          ),
-        ],
-      );
-    },
-  );
-}
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Try Again'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-void _showMicrophoneError() {
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text(
-        'Unable to access the microphone.',
-      ),
-    ),
-  );
-}
+  void _showMicrophoneError() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Unable to access the microphone.')),
+    );
+  }
 
   void _addInitialMessage() {
     _messages.add(
       ChatMessage(
-        id: DateTime.now()
-            .millisecondsSinceEpoch
-            .toString(),
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
         text: _getOpeningMessage(),
         sender: MessageSender.ai,
         timestamp: DateTime.now(),
@@ -240,122 +210,106 @@ void _showMicrophoneError() {
   }
 
   void _startTimer() {
-    _timer = Timer.periodic(
-      const Duration(seconds: 1),
-      (_) {
-        if (!mounted) return;
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
 
-        if (_remainingSeconds <= 0) {
-          _timer?.cancel();
-          _endSession();
-          return;
-        }
+      if (_remainingSeconds <= 0) {
+        _timer?.cancel();
+        _endSession();
+        return;
+      }
 
-        setState(() {
-          _remainingSeconds--;
-        });
-      },
-    );
+      setState(() {
+        _remainingSeconds--;
+      });
+    });
   }
 
   String get _formattedTime {
-    final minutes =
-        _remainingSeconds ~/ 60;
+    final minutes = _remainingSeconds ~/ 60;
 
-    final seconds =
-        _remainingSeconds % 60;
+    final seconds = _remainingSeconds % 60;
 
     return '${minutes.toString().padLeft(2, '0')}:'
         '${seconds.toString().padLeft(2, '0')}';
   }
 
   void _handleMic() {
-    if (_speakingState ==
-        SpeakingState.idle) {
+    if (_speakingState == SpeakingState.idle) {
       _startListening();
-    } else if (_speakingState ==
-        SpeakingState.listening) {
+    } else if (_speakingState == SpeakingState.listening) {
       _stopListening();
     }
   }
 
   Future<void> _startListening() async {
-  try {
-    final available =
-        await _speechRecognitionService.initialize();
+    try {
+      final available = await _speechRecognitionService.initialize();
 
-    if (!available) {
+      if (!available) {
+        _showSpeechRecognitionError();
+        return;
+      }
+
+      final started = await _speechRecognitionService.startListening(
+        onResult: _handleSpeechResult,
+      );
+
+      if (!started) {
+        _showSpeechRecognitionError();
+        return;
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        _speakingState = SpeakingState.listening;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
       _showSpeechRecognitionError();
-      return;
     }
-
-    final started =
-        await _speechRecognitionService.startListening(
-      onResult: _handleSpeechResult,
-    );
-
-    if (!started) {
-      _showSpeechRecognitionError();
-      return;
-    }
-
-    if (!mounted) return;
-
-    setState(() {
-      _speakingState =
-          SpeakingState.listening;
-    });
-  } catch (e) {
-    if (!mounted) return;
-
-    _showSpeechRecognitionError();
   }
-}
 
   Future<void> _stopListening() async {
-  try {
-    await _speechRecognitionService.stopListening();
+    try {
+      await _speechRecognitionService.stopListening();
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() {
-      _speakingState =
-          SpeakingState.processing;
-    });
-  } catch (e) {
-    if (!mounted) return;
+      setState(() {
+        _speakingState = SpeakingState.processing;
+      });
+    } catch (e) {
+      if (!mounted) return;
 
-    setState(() {
-      _speakingState =
-          SpeakingState.idle;
-    });
+      setState(() {
+        _speakingState = SpeakingState.idle;
+      });
 
-    _showSpeechRecognitionError();
+      _showSpeechRecognitionError();
+    }
   }
-} 
 
   void _showSpeechRecognitionError() {
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text(
-        'Speech recognition is not available. '
-        'Please check your microphone and speech settings.',
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Speech recognition is not available. '
+          'Please check your microphone and speech settings.',
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-
-void _showAiError() {
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text(
-        'Something went wrong while generating the AI response.',
+  void _showAiError() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Something went wrong while generating the AI response.'),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   void _endSession() {
     _timer?.cancel();
@@ -367,12 +321,8 @@ void _showAiError() {
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title: const Text(
-            'Session Complete 🎉',
-          ),
-          content: const Text(
-            'Great job! Your speaking session has ended.',
-          ),
+          title: const Text('Session Complete 🎉'),
+          content: const Text('Great job! Your speaking session has ended.'),
           actions: [
             TextButton(
               onPressed: () {
@@ -404,46 +354,34 @@ void _showAiError() {
         elevation: 0,
         leading: IconButton(
           onPressed: _endSession,
-          icon: const Icon(
-            Icons.close_rounded,
-          ),
+          icon: const Icon(Icons.close_rounded),
         ),
         title: const Column(
           children: [
             Text(
               'TalkNexa AI',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-              ),
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
             ),
             SizedBox(height: 2),
             Text(
               'Speaking Partner',
-              style: TextStyle(
-                fontSize: 10,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
             ),
           ],
         ),
         centerTitle: true,
         actions: [
           Padding(
-            padding:
-                const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.only(right: 16),
             child: Center(
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: 10,
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primary
-                      .withValues(alpha: 0.08),
-                  borderRadius:
-                      BorderRadius.circular(20),
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   _formattedTime,
@@ -480,29 +418,18 @@ void _showAiError() {
 
             Expanded(
               child: ListView.builder(
-                padding:
-                    const EdgeInsets.symmetric(
-                  horizontal: 20,
-                ),
-                physics:
-                    const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                physics: const BouncingScrollPhysics(),
                 itemCount: _messages.length,
-                itemBuilder: (
-                  context,
-                  index,
-                ) {
-                  return ChatMessageBubble(
-                    message: _messages[index],
-                  );
+                itemBuilder: (context, index) {
+                  return ChatMessageBubble(message: _messages[index]);
                 },
               ),
             ),
 
-            if (_speakingState ==
-                SpeakingState.aiSpeaking)
+            if (_speakingState == SpeakingState.aiSpeaking)
               const Padding(
-                padding:
-                    EdgeInsets.only(bottom: 8),
+                padding: EdgeInsets.only(bottom: 8),
                 child: Text(
                   'TalkNexa AI is speaking...',
                   style: TextStyle(
@@ -514,24 +441,15 @@ void _showAiError() {
               ),
 
             Container(
-              padding:
-                  const EdgeInsets.fromLTRB(
-                20,
-                14,
-                20,
-                22,
-              ),
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 22),
               decoration: BoxDecoration(
                 color: AppColors.surface,
-                borderRadius:
-                    const BorderRadius.vertical(
+                borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(28),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(
-                      alpha: 0.05,
-                    ),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 20,
                     offset: const Offset(0, -5),
                   ),
@@ -539,10 +457,7 @@ void _showAiError() {
               ),
               child: Column(
                 children: [
-                  MicControl(
-                    state: _speakingState,
-                    onTap: _handleMic,
-                  ),
+                  MicControl(state: _speakingState, onTap: _handleMic),
 
                   const SizedBox(height: 16),
 
@@ -552,8 +467,7 @@ void _showAiError() {
                       'End Session',
                       style: TextStyle(
                         color: AppColors.error,
-                        fontWeight:
-                            FontWeight.w700,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),

@@ -11,15 +11,10 @@ class MicrophoneService {
     final hasAccess = await _recorder.hasPermission();
 
     if (!hasAccess) {
-      throw Exception(
-        'Microphone permission was not granted.',
-      );
+      throw Exception('Microphone permission was not granted.');
     }
 
-    await _recorder.start(
-      const RecordConfig(),
-      path: '',
-    );
+    await _recorder.start(const RecordConfig(), path: '');
   }
 
   Future<void> stopRecording() async {

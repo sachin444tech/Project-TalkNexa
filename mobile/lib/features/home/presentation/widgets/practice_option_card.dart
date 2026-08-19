@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:mobile/app/theme/app_colors.dart';
 
-
 class PracticeOptionCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -31,9 +30,7 @@ class PracticeOptionCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: Colors.black.withValues(alpha: 0.05),
-            ),
+            border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.035),
@@ -56,11 +53,7 @@ class PracticeOptionCard extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 24,
-                ),
+                child: Icon(icon, color: Colors.white, size: 24),
               ),
 
               const SizedBox(height: 16),

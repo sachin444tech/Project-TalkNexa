@@ -10,8 +10,7 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepositoryImpl();
 });
 
-final authControllerProvider =
-    NotifierProvider<AuthController, AuthState>(
+final authControllerProvider = NotifierProvider<AuthController, AuthState>(
   AuthController.new,
 );
 
@@ -25,27 +24,17 @@ class AuthController extends Notifier<AuthState> {
     final currentUser = _repository.getCurrentUser();
 
     if (currentUser != null) {
-      return const AuthState(
-        status: AuthStatus.authenticated,
-      );
+      return const AuthState(status: AuthStatus.authenticated);
     }
 
-    return const AuthState(
-      status: AuthStatus.unauthenticated,
-    );
+    return const AuthState(status: AuthStatus.unauthenticated);
   }
 
-  Future<void> signIn({
-    required String email,
-    required String password,
-  }) async {
-    state = const AuthState(
-      status: AuthStatus.loading,
-    );
+  Future<void> signIn({required String email, required String password}) async {
+    state = const AuthState(status: AuthStatus.loading);
 
     try {
-      final user =
-          await _repository.signInWithEmailAndPassword(
+      final user = await _repository.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -59,9 +48,7 @@ class AuthController extends Notifier<AuthState> {
         return;
       }
 
-      state = const AuthState(
-        status: AuthStatus.authenticated,
-      );
+      state = const AuthState(status: AuthStatus.authenticated);
     } on FirebaseAuthException catch (exception) {
       state = AuthState(
         status: AuthStatus.error,
@@ -70,8 +57,7 @@ class AuthController extends Notifier<AuthState> {
     } catch (_) {
       state = const AuthState(
         status: AuthStatus.error,
-        errorMessage:
-            'Something went wrong. Please try again.',
+        errorMessage: 'Something went wrong. Please try again.',
       );
     }
   }
@@ -79,8 +65,6 @@ class AuthController extends Notifier<AuthState> {
   Future<void> signOut() async {
     await _repository.signOut();
 
-    state = const AuthState(
-      status: AuthStatus.unauthenticated,
-    );
+    state = const AuthState(status: AuthStatus.unauthenticated);
   }
 }

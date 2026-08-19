@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
-
 class AchievementPreview extends StatelessWidget {
-  const AchievementPreview({
-    super.key,
-  });
+  const AchievementPreview({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,10 +9,7 @@ class AchievementPreview extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF7C3AED),
-            Color(0xFF4F46E5),
-          ],
+          colors: [Color(0xFF7C3AED), Color(0xFF4F46E5)],
         ),
         borderRadius: BorderRadius.circular(24),
       ),
@@ -25,9 +19,7 @@ class AchievementPreview extends StatelessWidget {
             width: 54,
             height: 54,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(
-                alpha: 0.15,
-              ),
+              color: Colors.white.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -41,15 +33,11 @@ class AchievementPreview extends StatelessWidget {
 
           const Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Your next milestone',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
                 SizedBox(height: 4),
                 Text(
@@ -63,10 +51,7 @@ class AchievementPreview extends StatelessWidget {
                 SizedBox(height: 4),
                 Text(
                   'Complete your first speaking session.',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 11),
                 ),
               ],
             ),

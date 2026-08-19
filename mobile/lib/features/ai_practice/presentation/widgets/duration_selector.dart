@@ -12,47 +12,29 @@ class DurationSelector extends StatelessWidget {
     required this.onChanged,
   });
 
-  static const durations = [
-    5,
-    10,
-    15,
-    20,
-  ];
+  static const durations = [5, 10, 15, 20];
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: durations.map((duration) {
-        final selected =
-            duration == selectedDuration;
+        final selected = duration == selectedDuration;
 
         return Expanded(
           child: Padding(
-            padding: EdgeInsets.only(
-              right: duration == durations.last
-                  ? 0
-                  : 8,
-            ),
+            padding: EdgeInsets.only(right: duration == durations.last ? 0 : 8),
             child: GestureDetector(
               onTap: () => onChanged(duration),
               child: AnimatedContainer(
-                duration: const Duration(
-                  milliseconds: 200,
-                ),
-                padding: const EdgeInsets.symmetric(
-                  vertical: 14,
-                ),
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: selected
-                      ? AppColors.secondary
-                      : AppColors.surface,
+                  color: selected ? AppColors.secondary : AppColors.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: selected
                         ? AppColors.secondary
-                        : Colors.black.withValues(
-                            alpha: 0.06,
-                          ),
+                        : Colors.black.withValues(alpha: 0.06),
                   ),
                 ),
                 child: Text(
@@ -61,9 +43,7 @@ class DurationSelector extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: selected
-                        ? Colors.white
-                        : AppColors.textSecondary,
+                    color: selected ? Colors.white : AppColors.textSecondary,
                   ),
                 ),
               ),

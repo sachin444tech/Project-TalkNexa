@@ -1,6 +1,1 @@
-enum SpeakingState {
-  idle,
-  listening,
-  processing,
-  aiSpeaking,
-}
+enum SpeakingState { idle, listening, processing, aiSpeaking }

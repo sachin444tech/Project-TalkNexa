@@ -19,9 +19,7 @@ class AuthTextField extends StatelessWidget {
       decoration: InputDecoration(
         prefixIcon: Icon(icon),
         hintText: hint,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
       ),
     );
   }

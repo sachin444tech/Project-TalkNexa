@@ -32,33 +32,20 @@ class _SplashScreenState extends State<SplashScreen>
     _scaleAnimation = Tween<double>(
       begin: 0.6,
       end: 1.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOutBack,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
 
-    _opacityAnimation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(_controller);
+    _opacityAnimation = Tween<double>(begin: 0, end: 1).animate(_controller);
 
     _controller.forward();
 
-    Timer(
-      const Duration(seconds: 3),
-      () {
-        if (!mounted) return;
+    Timer(const Duration(seconds: 3), () {
+      if (!mounted) return;
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const AuthGate(),
-          ),
-        );
-      },
-    );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AuthGate()),
+      );
+    });
   }
 
   @override
@@ -75,10 +62,7 @@ class _SplashScreenState extends State<SplashScreen>
 
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xff2563EB),
-              Color(0xff1E3A8A),
-            ],
+            colors: [Color(0xff2563EB), Color(0xff1E3A8A)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -94,11 +78,7 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-
-                  Image.asset(
-                    AppAssets.logo,
-                    height: 120,
-                  ),
+                  Image.asset(AppAssets.logo, height: 120),
 
                   const SizedBox(height: 25),
 
@@ -116,10 +96,7 @@ class _SplashScreenState extends State<SplashScreen>
                   const Text(
                     AppStrings.tagline,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white70,
-                    ),
+                    style: TextStyle(fontSize: 18, color: Colors.white70),
                   ),
 
                   const SizedBox(height: 40),
@@ -129,18 +106,13 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Text(
                       "Helping learners improve their English speaking skills through AI-powered conversations and real-time practice with people around the world.",
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        height: 1.6,
-                      ),
+                      style: TextStyle(color: Colors.white, height: 1.6),
                     ),
                   ),
 
                   const SizedBox(height: 45),
 
-                  const CircularProgressIndicator(
-                    color: Colors.white,
-                  ),
+                  const CircularProgressIndicator(color: Colors.white),
                 ],
               ),
             ),

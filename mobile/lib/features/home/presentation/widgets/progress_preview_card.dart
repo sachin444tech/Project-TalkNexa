@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:mobile/app/theme/app_colors.dart';
 
-
 class ProgressPreviewCard extends StatelessWidget {
-  const ProgressPreviewCard({
-    super.key,
-  });
+  const ProgressPreviewCard({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,20 +12,16 @@ class ProgressPreviewCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Colors.black.withValues(alpha: 0.05),
-        ),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Your progress',
@@ -49,20 +42,13 @@ class ProgressPreviewCard extends StatelessWidget {
                 ),
               ),
 
-              TextButton(
-                onPressed: () {},
-                child: const Text('View'),
-              ),
+              TextButton(onPressed: () {}, child: const Text('View')),
             ],
           ),
 
           const SizedBox(height: 20),
 
-          const _ProgressRow(
-            title: 'Speaking',
-            value: 0.72,
-            percentage: '72%',
-          ),
+          const _ProgressRow(title: 'Speaking', value: 0.72, percentage: '72%'),
 
           const SizedBox(height: 15),
 
@@ -74,11 +60,7 @@ class ProgressPreviewCard extends StatelessWidget {
 
           const SizedBox(height: 15),
 
-          const _ProgressRow(
-            title: 'Fluency',
-            value: 0.48,
-            percentage: '48%',
-          ),
+          const _ProgressRow(title: 'Fluency', value: 0.48, percentage: '48%'),
         ],
       ),
     );
@@ -130,10 +112,7 @@ class _ProgressRow extends StatelessWidget {
             value: value,
             minHeight: 7,
             backgroundColor: AppColors.background,
-            valueColor:
-                const AlwaysStoppedAnimation(
-              AppColors.primary,
-            ),
+            valueColor: const AlwaysStoppedAnimation(AppColors.primary),
           ),
         ),
       ],

@@ -18,7 +18,19 @@ class AiService {
     scenario,
     difficulty,
     userLevel,
+    conversationHistory = [],
   }) {
+    const historyText = conversationHistory
+      .map((item) => {
+        const role =
+          item.role === "assistant"
+            ? "TalkNexa AI"
+            : "User";
+
+        return `${role}: ${item.content}`;
+      })
+      .join("\n");
+
     const prompt = `
 You are TalkNexa, an AI English speaking partner.
 
@@ -44,16 +56,24 @@ Important behavior:
 - Never pretend to be a human.
 - Be friendly, supportive, and patient.
 
-User's message:
+Previous conversation:
+${historyText || "No previous conversation."}
+
+Current user message:
 ${message}
 
 Respond as the TalkNexa AI speaking partner.
 `;
+//console time and timeEnd is use to check how much ai taking time to response.
+    console.time("Gemini AI response");
 
-    const response = await this.ai.models.generateContent({
-      model: aiConfig.model,
-      contents: prompt,
-    });
+    const response =
+      await this.ai.models.generateContent({
+        model: aiConfig.model,
+        contents: prompt,
+      });
+
+      console.timeEnd("Gemini AI response");
 
     return {
       response: response.text,

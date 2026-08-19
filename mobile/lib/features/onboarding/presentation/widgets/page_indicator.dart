@@ -21,9 +21,7 @@ class PageIndicator extends StatelessWidget {
           width: currentIndex == index ? 22 : 8,
           height: 8,
           decoration: BoxDecoration(
-            color: currentIndex == index
-                ? Colors.blue
-                : Colors.grey,
+            color: currentIndex == index ? Colors.blue : Colors.grey,
             borderRadius: BorderRadius.circular(20),
           ),
         );

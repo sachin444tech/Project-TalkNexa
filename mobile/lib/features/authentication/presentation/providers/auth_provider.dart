@@ -1,5 +1,3 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final authRepositoryProvider = Provider(
-  (ref) => throw UnimplementedError(),
-);
+final authRepositoryProvider = Provider((ref) => throw UnimplementedError());

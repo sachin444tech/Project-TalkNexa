@@ -2,8 +2,7 @@ import 'package:mobile/features/ai_practice/data/services/ai_api_service.dart';
 import 'package:mobile/features/ai_practice/domain/models/ai_conversation_context.dart';
 
 class AiConversationService {
-  final AiApiService _apiService =
-      AiApiService();
+  final AiApiService _apiService = AiApiService();
 
   Future<String> generateResponse({
     required String userMessage,
@@ -14,6 +13,7 @@ class AiConversationService {
       scenario: context.scenario,
       difficulty: context.difficulty,
       userLevel: context.userLevel,
+      conversationHistory: context.messages,
     );
   }
 }

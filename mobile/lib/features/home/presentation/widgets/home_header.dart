@@ -2,14 +2,10 @@ import 'package:flutter/material.dart';
 
 import 'package:mobile/app/theme/app_colors.dart';
 
-
 class HomeHeader extends StatelessWidget {
   final String userName;
 
-  const HomeHeader({
-    super.key,
-    this.userName = 'Learner',
-  });
+  const HomeHeader({super.key, this.userName = 'Learner'});
 
   @override
   Widget build(BuildContext context) {
@@ -20,10 +16,7 @@ class HomeHeader extends StatelessWidget {
           height: 52,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [
-                AppColors.primary,
-                AppColors.accent,
-              ],
+              colors: [AppColors.primary, AppColors.accent],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -65,10 +58,7 @@ class HomeHeader extends StatelessWidget {
           ),
         ),
 
-        _HeaderIcon(
-          icon: Icons.notifications_none_rounded,
-          onTap: () {},
-        ),
+        _HeaderIcon(icon: Icons.notifications_none_rounded, onTap: () {}),
       ],
     );
   }
@@ -78,10 +68,7 @@ class _HeaderIcon extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const _HeaderIcon({
-    required this.icon,
-    required this.onTap,
-  });
+  const _HeaderIcon({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -96,15 +83,9 @@ class _HeaderIcon extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.black.withValues(alpha: 0.05),
-            ),
+            border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
           ),
-          child: Icon(
-            icon,
-            color: AppColors.textPrimary,
-            size: 23,
-          ),
+          child: Icon(icon, color: AppColors.textPrimary, size: 23),
         ),
       ),
     );

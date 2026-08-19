@@ -6,6 +6,8 @@ class AuthUser {
   const AuthUser({
     required this.id,
     this.email,
-    this.displayName, Object? name, Object? photoUrl,
+    this.displayName,
+    Object? name,
+    Object? photoUrl,
   });
 }

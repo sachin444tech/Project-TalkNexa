@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:mobile/app/theme/app_colors.dart';
 
-
 class DailyGoalCard extends StatelessWidget {
   final int completedMinutes;
   final int targetMinutes;
@@ -17,17 +16,14 @@ class DailyGoalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = targetMinutes == 0
         ? 0.0
-        : (completedMinutes / targetMinutes)
-            .clamp(0.0, 1.0);
+        : (completedMinutes / targetMinutes).clamp(0.0, 1.0);
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Colors.black.withValues(alpha: 0.05),
-        ),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
       ),
       child: Column(
         children: [
@@ -37,9 +33,7 @@ class DailyGoalCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(
-                    alpha: 0.12,
-                  ),
+                  color: AppColors.accent.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -53,8 +47,7 @@ class DailyGoalCard extends StatelessWidget {
 
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Daily speaking goal',
@@ -93,20 +86,15 @@ class DailyGoalCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 9,
-              backgroundColor:
-                  AppColors.background,
-              valueColor:
-                  const AlwaysStoppedAnimation(
-                AppColors.primary,
-              ),
+              backgroundColor: AppColors.background,
+              valueColor: const AlwaysStoppedAnimation(AppColors.primary),
             ),
           ),
 
           const SizedBox(height: 12),
 
           Row(
-            mainAxisAlignment:
-                MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 '$completedMinutes minutes completed',
@@ -117,10 +105,7 @@ class DailyGoalCard extends StatelessWidget {
               ),
               const Text(
                 '10 min goal',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
             ],
           ),

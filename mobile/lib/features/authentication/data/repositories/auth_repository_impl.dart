@@ -7,18 +7,15 @@ import '../services/firebase_auth_service.dart';
 class AuthRepositoryImpl implements AuthRepository {
   final FirebaseAuthService _authService;
 
-  AuthRepositoryImpl({
-    FirebaseAuthService? authService,
-  }) : _authService =
-            authService ?? FirebaseAuthService();
+  AuthRepositoryImpl({FirebaseAuthService? authService})
+    : _authService = authService ?? FirebaseAuthService();
 
   @override
   Future<AuthUser?> signInWithEmailAndPassword({
     required String email,
     required String password,
   }) async {
-    final credential =
-        await _authService.signInWithEmailAndPassword(
+    final credential = await _authService.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
