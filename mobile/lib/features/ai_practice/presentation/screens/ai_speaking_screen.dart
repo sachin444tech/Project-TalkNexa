@@ -88,12 +88,23 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         scenario: widget.scenario,
         difficulty: widget.difficulty,
         userLevel: 'Intermediate',
-        messages: List.unmodifiable(_messages),
-      );
+);
 
-      final response = await _aiConversationService.generateResponse(
-        userMessage: userText,
-        context: context,
+final conversationHistory = _messages
+    .take(_messages.length - 1)
+    .map(
+      (message) => {
+        'role': message.isUser ? 'user' : 'assistant',
+        'text': message.text,
+      },
+    )
+    .toList();
+
+final response =
+    await _aiConversationService.generateResponse(
+      userMessage: userText,
+      context: context,
+      conversationHistory: conversationHistory,
       );
 
       if (!mounted) return;
@@ -119,7 +130,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         _speakingState = SpeakingState.idle;
       });
     } catch (e) {
-      debugPrint('❌ AI ERROR: $e');
+      // debugPrint('❌ AI ERROR: $e');
       if (!mounted) return;
 
       setState(() {

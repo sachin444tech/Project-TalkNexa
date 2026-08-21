@@ -7,13 +7,14 @@ class AiConversationService {
   Future<String> generateResponse({
     required String userMessage,
     required AiConversationContext context,
+    required List<Map<String, String>> conversationHistory,
   }) async {
     return await _apiService.generateResponse(
       message: userMessage,
       scenario: context.scenario,
       difficulty: context.difficulty,
       userLevel: context.userLevel,
-      conversationHistory: context.messages,
+      conversationHistory: conversationHistory,
     );
   }
 }

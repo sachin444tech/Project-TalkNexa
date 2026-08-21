@@ -31,9 +31,7 @@ router.post("/conversation", async (req, res) => {
         userLevel:
           userLevel || "Intermediate",
         conversationHistory:
-          Array.isArray(conversationHistory)
-            ? conversationHistory
-            : [],
+          conversationHistory || [],
       });
 
     return res.json({
