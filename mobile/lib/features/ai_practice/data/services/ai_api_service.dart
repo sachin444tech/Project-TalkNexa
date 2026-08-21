@@ -2,9 +2,10 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:mobile/core/config/api_config.dart';
+import 'package:mobile/features/ai_practice/domain/models/ai_response.dart';
 
 class AiApiService {
-  Future<String> generateResponse({
+  Future<AiResponse> generateResponse({
     required String message,
     required String scenario,
     required String difficulty,
@@ -41,6 +42,6 @@ class AiApiService {
     final responseData =
         data['data'] as Map<String, dynamic>;
 
-    return responseData['response'] as String;
+    return AiResponse.fromJson(responseData);
   }
 }

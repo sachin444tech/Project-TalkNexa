@@ -76,6 +76,18 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
     _processUserMessage(text);
   }
 
+  List<Map<String, String>> _buildConversationHistory() {
+  return _messages.map((message) {
+    return {
+      'role': message.isUser
+          ? 'user'
+          : 'assistant',
+      'text': message.text,
+    };
+  }).toList();
+}
+
+
   Future<void> _processUserMessage(String userText) async {
     if (!mounted) return;
 
@@ -90,22 +102,15 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         userLevel: 'Intermediate',
 );
 
-final conversationHistory = _messages
-    .take(_messages.length - 1)
-    .map(
-      (message) => {
-        'role': message.isUser ? 'user' : 'assistant',
-        'text': message.text,
-      },
-    )
-    .toList();
+final conversationHistory =
+    _buildConversationHistory();
 
 final response =
     await _aiConversationService.generateResponse(
       userMessage: userText,
       context: context,
       conversationHistory: conversationHistory,
-      );
+    );
 
       if (!mounted) return;
 
@@ -113,7 +118,7 @@ final response =
         _messages.add(
           ChatMessage(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
-            text: response,
+            text: response.response,
             sender: MessageSender.ai,
             timestamp: DateTime.now(),
           ),

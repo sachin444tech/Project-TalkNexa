@@ -1,10 +1,12 @@
 import 'package:mobile/features/ai_practice/data/services/ai_api_service.dart';
 import 'package:mobile/features/ai_practice/domain/models/ai_conversation_context.dart';
+import 'package:mobile/features/ai_practice/domain/models/ai_response.dart';
 
 class AiConversationService {
-  final AiApiService _apiService = AiApiService();
+  final AiApiService _apiService =
+      AiApiService();
 
-  Future<String> generateResponse({
+  Future<AiResponse> generateResponse({
     required String userMessage,
     required AiConversationContext context,
     required List<Map<String, String>> conversationHistory,

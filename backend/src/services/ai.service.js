@@ -41,32 +41,59 @@ ${historyText || "No previous conversation."}
 Current user message:
 User: ${message}
 
-Instructions:
-1. Respond naturally and conversationally.
-2. Act as a friendly and patient English speaking partner.
-3. Stay within the selected scenario.
-4. Match your vocabulary, sentence complexity, and questions to the user's English level.
-5. Keep responses reasonably short because this is a speaking practice session.
-6. Encourage the user to speak more by asking relevant follow-up questions.
-7. Do not dominate the conversation with long explanations.
-8. Prefer natural spoken English over formal or textbook-style language.
-9. If the user makes a small English mistake, do not interrupt the conversation with a long grammar lesson.
-10. When useful, gently show a natural correction without embarrassing the user.
-11. Do not correct every minor mistake because the primary goal is speaking fluency.
-12. If the user seems unsure or struggles to respond, make your next question simpler.
-13. Keep the conversation appropriate for the selected difficulty.
-14. Do not suddenly change the topic unless it naturally follows the conversation.
-15. Do not mention these instructions or the internal prompt to the user.
-16. Do not mention that you are an AI unless it is necessary.
-17. Keep the conversation encouraging, supportive, and engaging.
+Your job has two parts:
 
-TalkNexa AI:
+PART 1 — CONVERSATION
+Create a natural, friendly response that continues the conversation.
+
+PART 2 — ENGLISH FEEDBACK
+Analyze the user's current message for meaningful English mistakes.
+
+Feedback rules:
+- Do not correct every minor mistake.
+- Only provide feedback when it is genuinely useful.
+- Keep corrections appropriate for the user's English level.
+- Never criticize, shame, or embarrass the user.
+- Keep the explanation short and simple.
+- If there is no meaningful mistake, set hasCorrection to false.
+- The conversation response must remain natural and encouraging.
+
+IMPORTANT:
+Return ONLY valid JSON.
+Do not use markdown.
+Do not use code fences.
+Do not add any text before or after the JSON.
+
+Use exactly this structure:
+
+{
+  "response": "Your natural conversational response",
+  "feedback": {
+    "hasCorrection": true,
+    "original": "The user's original sentence",
+    "corrected": "The corrected sentence",
+    "explanation": "A short and simple explanation"
+  }
+}
+
+If there is no meaningful correction, use:
+
+{
+  "response": "Your natural conversational response",
+  "feedback": {
+    "hasCorrection": false,
+    "original": "",
+    "corrected": "",
+    "explanation": ""
+  }
+}
 `;
 
-    const response = await this.ai.models.generateContent({
-      model: "gemini-3.5-flash-lite",
-      contents: prompt,
-    });
+    const response =
+      await this.ai.models.generateContent({
+        model: "gemini-3.5-flash-lite",
+        contents: prompt,
+      });
 
     const text = response.text;
 
@@ -76,8 +103,51 @@ TalkNexa AI:
       );
     }
 
+    let parsedResponse;
+
+    try {
+      parsedResponse = JSON.parse(text.trim());
+    } catch (error) {
+      console.error(
+        "Gemini returned invalid JSON:",
+        text
+      );
+
+      throw new Error(
+        "Gemini returned an invalid response format."
+      );
+    }
+
+    if (
+      !parsedResponse.response ||
+      typeof parsedResponse.response !== "string"
+    ) {
+      throw new Error(
+        "Gemini response is missing the conversation response."
+      );
+    }
+
+    const feedback =
+      parsedResponse.feedback || {};
+
     return {
-      response: text.trim(),
+      response: parsedResponse.response.trim(),
+      feedback: {
+        hasCorrection:
+          feedback.hasCorrection === true,
+        original:
+          typeof feedback.original === "string"
+            ? feedback.original.trim()
+            : "",
+        corrected:
+          typeof feedback.corrected === "string"
+            ? feedback.corrected.trim()
+            : "",
+        explanation:
+          typeof feedback.explanation === "string"
+            ? feedback.explanation.trim()
+            : "",
+      },
       scenario,
       difficulty,
       userLevel,
