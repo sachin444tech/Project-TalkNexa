@@ -12,6 +12,8 @@ import 'package:mobile/features/ai_practice/domain/services/speech_recognition_s
 import 'package:mobile/features/ai_practice/presentation/widgets/ai_partner_avatar.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/chat_message_bubble.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/mic_control.dart';
+import 'package:mobile/features/ai_practice/domain/models/ai_response.dart';
+import 'package:mobile/features/ai_practice/presentation/widgets/ai_feedback_card.dart';
 
 class AiSpeakingScreen extends StatefulWidget {
   final String scenario;
@@ -40,6 +42,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   final AiConversationService _aiConversationService = AiConversationService();
 
   final List<ChatMessage> _messages = [];
+
+  AiFeedback? _latestFeedback;
 
   Timer? _timer;
 
@@ -70,6 +74,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         ),
       );
 
+      _latestFeedback = null;
       _speakingState = SpeakingState.processing;
     });
 
@@ -123,7 +128,9 @@ final response =
             timestamp: DateTime.now(),
           ),
         );
-
+        
+        _latestFeedback = response.feedback;
+        
         _speakingState = SpeakingState.aiSpeaking;
       });
 
@@ -438,10 +445,18 @@ final response =
                 physics: const BouncingScrollPhysics(),
                 itemCount: _messages.length,
                 itemBuilder: (context, index) {
-                  return ChatMessageBubble(message: _messages[index]);
+                  return ChatMessageBubble(
+                    message: _messages[index],
+                  );
                 },
               ),
             ),
+
+if (_latestFeedback != null &&
+    _latestFeedback!.hasCorrection)
+  AiFeedbackCard(
+    feedback: _latestFeedback!,
+  ),
 
             if (_speakingState == SpeakingState.aiSpeaking)
               const Padding(
