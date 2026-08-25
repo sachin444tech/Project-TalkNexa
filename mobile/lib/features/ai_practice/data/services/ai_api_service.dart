@@ -12,15 +12,11 @@ class AiApiService {
     required String userLevel,
     required List<Map<String, String>> conversationHistory,
   }) async {
-    final uri = Uri.parse(
-      '${ApiConfig.baseUrl}/api/ai/conversation',
-    );
+    final uri = Uri.parse('${ApiConfig.baseUrl}/api/ai/conversation');
 
     final response = await http.post(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'message': message,
         'scenario': scenario,
@@ -31,16 +27,12 @@ class AiApiService {
     );
 
     if (response.statusCode != 200) {
-      throw Exception(
-        'AI request failed: ${response.statusCode}',
-      );
+      throw Exception('AI request failed: ${response.statusCode}');
     }
 
-    final data =
-        jsonDecode(response.body) as Map<String, dynamic>;
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
 
-    final responseData =
-        data['data'] as Map<String, dynamic>;
+    final responseData = data['data'] as Map<String, dynamic>;
 
     return AiResponse.fromJson(responseData);
   }

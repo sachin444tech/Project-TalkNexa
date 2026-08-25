@@ -11,18 +11,12 @@ class AiFeedback {
     required this.explanation,
   });
 
-  factory AiFeedback.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AiFeedback.fromJson(Map<String, dynamic> json) {
     return AiFeedback(
-      hasCorrection:
-          json['hasCorrection'] == true,
-      original:
-          json['original'] as String? ?? '',
-      corrected:
-          json['corrected'] as String? ?? '',
-      explanation:
-          json['explanation'] as String? ?? '',
+      hasCorrection: json['hasCorrection'] == true,
+      original: json['original'] as String? ?? '',
+      corrected: json['corrected'] as String? ?? '',
+      explanation: json['explanation'] as String? ?? '',
     );
   }
 }

@@ -3,8 +3,7 @@ import 'package:mobile/features/ai_practice/domain/models/ai_conversation_contex
 import 'package:mobile/features/ai_practice/domain/models/ai_response.dart';
 
 class AiConversationService {
-  final AiApiService _apiService =
-      AiApiService();
+  final AiApiService _apiService = AiApiService();
 
   Future<AiResponse> generateResponse({
     required String userMessage,

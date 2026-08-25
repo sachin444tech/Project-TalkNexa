@@ -45,6 +45,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
   AiFeedback? _latestFeedback;
 
+  final ScrollController _scrollController = ScrollController();
+
   Timer? _timer;
 
   late int _remainingSeconds;
@@ -64,6 +66,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   void _addUserMessage(String text) {
+    final conversationHistory = _buildConversationHistory();
+
     setState(() {
       _messages.add(
         ChatMessage(
@@ -78,22 +82,24 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
       _speakingState = SpeakingState.processing;
     });
 
-    _processUserMessage(text);
+    _scrollToLatestMessage();
+
+    _processUserMessage(text, conversationHistory);
   }
 
   List<Map<String, String>> _buildConversationHistory() {
-  return _messages.map((message) {
-    return {
-      'role': message.isUser
-          ? 'user'
-          : 'assistant',
-      'text': message.text,
-    };
-  }).toList();
-}
+    return _messages.map((message) {
+      return {
+        'role': message.isUser ? 'user' : 'assistant',
+        'text': message.text,
+      };
+    }).toList();
+  }
 
-
-  Future<void> _processUserMessage(String userText) async {
+  Future<void> _processUserMessage(
+    String userText,
+    List<Map<String, String>> conversationHistory,
+  ) async {
     if (!mounted) return;
 
     setState(() {
@@ -105,17 +111,13 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         scenario: widget.scenario,
         difficulty: widget.difficulty,
         userLevel: 'Intermediate',
-);
+      );
 
-final conversationHistory =
-    _buildConversationHistory();
-
-final response =
-    await _aiConversationService.generateResponse(
-      userMessage: userText,
-      context: context,
-      conversationHistory: conversationHistory,
-    );
+      final AiResponse response = await _aiConversationService.generateResponse(
+        userMessage: userText,
+        context: context,
+        conversationHistory: conversationHistory,
+      );
 
       if (!mounted) return;
 
@@ -128,11 +130,13 @@ final response =
             timestamp: DateTime.now(),
           ),
         );
-        
+
         _latestFeedback = response.feedback;
-        
+
         _speakingState = SpeakingState.aiSpeaking;
       });
+
+      _scrollToLatestMessage();
 
       await Future.delayed(const Duration(seconds: 2));
 
@@ -142,7 +146,6 @@ final response =
         _speakingState = SpeakingState.idle;
       });
     } catch (e) {
-      // debugPrint('❌ AI ERROR: $e');
       if (!mounted) return;
 
       setState(() {
@@ -151,6 +154,18 @@ final response =
 
       _showAiError();
     }
+  }
+
+  void _scrollToLatestMessage() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   @override
@@ -162,41 +177,6 @@ final response =
     _addInitialMessage();
 
     _startTimer();
-  }
-
-  void _showMicrophonePermissionMessage() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Microphone Permission'),
-          content: const Text(
-            'TalkNexa needs microphone access '
-            'so you can practice speaking.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Try Again'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showMicrophoneError() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Unable to access the microphone.')),
-    );
   }
 
   void _addInitialMessage() {
@@ -363,6 +343,7 @@ final response =
   @override
   void dispose() {
     _timer?.cancel();
+    _scrollController.dispose();
     _microphoneService.dispose();
     _speechRecognitionService.dispose();
     super.dispose();
@@ -441,22 +422,26 @@ final response =
 
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                controller: _scrollController,
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                 physics: const BouncingScrollPhysics(),
-                itemCount: _messages.length,
+                itemCount:
+                    _messages.length +
+                    (_latestFeedback != null && _latestFeedback!.hasCorrection
+                        ? 1
+                        : 0),
                 itemBuilder: (context, index) {
-                  return ChatMessageBubble(
-                    message: _messages[index],
+                  if (index < _messages.length) {
+                    return ChatMessageBubble(message: _messages[index]);
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: AiFeedbackCard(feedback: _latestFeedback!),
                   );
                 },
               ),
             ),
-
-if (_latestFeedback != null &&
-    _latestFeedback!.hasCorrection)
-  AiFeedbackCard(
-    feedback: _latestFeedback!,
-  ),
 
             if (_speakingState == SpeakingState.aiSpeaking)
               const Padding(

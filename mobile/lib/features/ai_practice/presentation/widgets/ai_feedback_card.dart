@@ -6,10 +6,7 @@ import 'package:mobile/features/ai_practice/domain/models/ai_response.dart';
 class AiFeedbackCard extends StatelessWidget {
   final AiFeedback feedback;
 
-  const AiFeedbackCard({
-    super.key,
-    required this.feedback,
-  });
+  const AiFeedbackCard({super.key, required this.feedback});
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +20,7 @@ class AiFeedbackCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.12),
-        ),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,10 +42,7 @@ class AiFeedbackCard extends StatelessWidget {
               const SizedBox(width: 10),
               const Text(
                 'English Feedback',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
               ),
             ],
           ),
@@ -68,12 +60,7 @@ class AiFeedbackCard extends StatelessWidget {
 
           const SizedBox(height: 4),
 
-          Text(
-            feedback.original,
-            style: const TextStyle(
-              fontSize: 13,
-            ),
-          ),
+          Text(feedback.original, style: const TextStyle(fontSize: 13)),
 
           const SizedBox(height: 12),
 
@@ -90,10 +77,7 @@ class AiFeedbackCard extends StatelessWidget {
 
           Text(
             feedback.corrected,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
           ),
 
           if (feedback.explanation.isNotEmpty) ...[

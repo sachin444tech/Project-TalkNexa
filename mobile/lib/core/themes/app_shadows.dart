@@ -5,7 +5,7 @@ class AppShadows {
 
   static final soft = [
     BoxShadow(
-      color: Colors.black.withOpacity(.08),
+      color: Colors.black.withValues(alpha: 0.08),
       blurRadius: 25,
       offset: const Offset(0, 12),
     ),
