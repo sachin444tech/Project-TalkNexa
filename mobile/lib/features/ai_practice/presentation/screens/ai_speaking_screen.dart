@@ -9,6 +9,7 @@ import 'package:mobile/features/ai_practice/domain/models/speaking_state.dart';
 import 'package:mobile/features/ai_practice/domain/services/ai_conversation_service.dart';
 import 'package:mobile/features/ai_practice/domain/services/microphone_service.dart';
 import 'package:mobile/features/ai_practice/domain/services/speech_recognition_service.dart';
+import 'package:mobile/features/ai_practice/domain/services/text_to_speech_service.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/ai_partner_avatar.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/chat_message_bubble.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/mic_control.dart';
@@ -40,6 +41,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
       SpeechRecognitionService();
 
   final AiConversationService _aiConversationService = AiConversationService();
+
+  final TextToSpeechService _textToSpeechService = TextToSpeechService();
 
   final List<ChatMessage> _messages = [];
 
@@ -136,9 +139,11 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         _speakingState = SpeakingState.aiSpeaking;
       });
 
+      await _textToSpeechService.speak(response.response);
+
       _scrollToLatestMessage();
 
-      await Future.delayed(const Duration(seconds: 2));
+      // await Future.delayed(const Duration(seconds: 2));
 
       if (!mounted) return;
 
@@ -168,6 +173,10 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
     });
   }
 
+  Future<void> _initializeServices() async {
+    await _textToSpeechService.initialize();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -177,6 +186,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
     _addInitialMessage();
 
     _startTimer();
+
+    _initializeServices();
   }
 
   void _addInitialMessage() {
@@ -346,6 +357,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
     _scrollController.dispose();
     _microphoneService.dispose();
     _speechRecognitionService.dispose();
+    _textToSpeechService.dispose();
     super.dispose();
   }
 
