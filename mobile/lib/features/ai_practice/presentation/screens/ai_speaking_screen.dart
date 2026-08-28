@@ -54,6 +54,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
   late int _remainingSeconds;
 
+  int _speechGeneration = 0;
+
   void _handleSpeechResult(String text, bool isFinal) {
     if (!mounted) return;
 
@@ -139,13 +141,17 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         _speakingState = SpeakingState.aiSpeaking;
       });
 
+      final speechGeneration = ++_speechGeneration;
+
       await _textToSpeechService.speak(response.response);
 
-      _scrollToLatestMessage();
-
-      // await Future.delayed(const Duration(seconds: 2));
-
       if (!mounted) return;
+
+      if (speechGeneration != _speechGeneration) {
+        return;
+      }
+
+      _scrollToLatestMessage();
 
       setState(() {
         _speakingState = SpeakingState.idle;
@@ -248,11 +254,29 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         '${seconds.toString().padLeft(2, '0')}';
   }
 
-  void _handleMic() {
+  Future<void> _handleMic() async {
+    if (_speakingState == SpeakingState.aiSpeaking) {
+      _speechGeneration++;
+
+      await _textToSpeechService.interrupt();
+
+      if (!mounted) return;
+
+      setState(() {
+        _speakingState = SpeakingState.idle;
+      });
+
+      await _startListening();
+      return;
+    }
+
     if (_speakingState == SpeakingState.idle) {
-      _startListening();
-    } else if (_speakingState == SpeakingState.listening) {
-      _stopListening();
+      await _startListening();
+      return;
+    }
+
+    if (_speakingState == SpeakingState.listening) {
+      await _stopListening();
     }
   }
 
@@ -325,8 +349,12 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
     );
   }
 
-  void _endSession() {
+  Future<void> _endSession() async {
     _timer?.cancel();
+
+    _speechGeneration++;
+
+    await _textToSpeechService.interrupt();
 
     if (!mounted) return;
 
