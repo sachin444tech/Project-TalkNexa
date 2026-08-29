@@ -1,21 +1,26 @@
 import 'dart:async';
 
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:mobile/features/ai_practice/domain/models/voice_config.dart';
 
 class TextToSpeechService {
   final FlutterTts _flutterTts = FlutterTts();
+
+  final VoiceConfig _config;
 
   bool _initialized = false;
 
   Completer<void>? _speechCompleter;
 
+  TextToSpeechService({this._config = VoiceConfig.defaultConfig});
+
   Future<void> initialize() async {
     if (_initialized) return;
 
-    await _flutterTts.setLanguage('en-US');
-    await _flutterTts.setSpeechRate(0.48);
-    await _flutterTts.setPitch(1.0);
-    await _flutterTts.setVolume(1.0);
+    await _flutterTts.setLanguage(_config.language);
+    await _flutterTts.setSpeechRate(_config.speechRate);
+    await _flutterTts.setPitch(_config.pitch);
+    await _flutterTts.setVolume(_config.volume);
 
     _flutterTts.setCompletionHandler(() {
       final completer = _speechCompleter;
