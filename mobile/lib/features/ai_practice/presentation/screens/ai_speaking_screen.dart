@@ -126,6 +126,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
       if (!mounted) return;
 
+      final speechGeneration = ++_speechGeneration;
+
       setState(() {
         _messages.add(
           ChatMessage(
@@ -140,8 +142,6 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
         _speakingState = SpeakingState.aiSpeaking;
       });
-
-      final speechGeneration = ++_speechGeneration;
 
       await _textToSpeechService.speak(response.response);
 
@@ -180,7 +180,13 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   Future<void> _initializeServices() async {
-    await _textToSpeechService.initialize();
+    try {
+      await _textToSpeechService.initialize();
+
+      if (!mounted) return;
+    } catch (e) {
+      if (!mounted) return;
+    }
   }
 
   @override
