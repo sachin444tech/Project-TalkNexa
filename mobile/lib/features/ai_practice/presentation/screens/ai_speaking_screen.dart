@@ -15,6 +15,7 @@ import 'package:mobile/features/ai_practice/presentation/widgets/chat_message_bu
 import 'package:mobile/features/ai_practice/presentation/widgets/mic_control.dart';
 import 'package:mobile/features/ai_practice/domain/models/ai_response.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/ai_feedback_card.dart';
+import 'package:mobile/features/ai_practice/domain/services/ai_voice_selector.dart';
 
 class AiSpeakingScreen extends StatefulWidget {
   final String scenario;
@@ -42,7 +43,9 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
   final AiConversationService _aiConversationService = AiConversationService();
 
-  final TextToSpeechService _textToSpeechService = TextToSpeechService();
+  late final TextToSpeechService _textToSpeechService;
+
+  final AiVoiceSelector _aiVoiceSelector = const AiVoiceSelector();
 
   final List<ChatMessage> _messages = [];
 
@@ -55,6 +58,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   late int _remainingSeconds;
 
   int _speechGeneration = 0;
+
+  bool _voiceReady = false;
 
   void _handleSpeechResult(String text, bool isFinal) {
     if (!mounted) return;
@@ -180,14 +185,31 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   Future<void> _initializeServices() async {
-    try {
-      await _textToSpeechService.initialize();
+  try {
+    final voiceProfile = _aiVoiceSelector.select(
+      scenario: widget.scenario,
+      difficulty: widget.difficulty,
+    );
 
-      if (!mounted) return;
-    } catch (e) {
-      if (!mounted) return;
-    }
+    debugPrint(
+      'TalkNexa AI voice profile: ${voiceProfile.name}',
+    );
+
+    _textToSpeechService = TextToSpeechService(
+      config: voiceProfile.config,
+    );
+
+    await _textToSpeechService.initialize();
+
+    if (!mounted) return;
+
+    setState(() {
+      _voiceReady = true;
+    });
+  } catch (e) {
+    if (!mounted) return;
   }
+}
 
   @override
   void initState() {
@@ -261,6 +283,9 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   Future<void> _handleMic() async {
+    if(!_voiceReady){
+      return;
+    }
     if (_speakingState == SpeakingState.aiSpeaking) {
       _speechGeneration++;
 

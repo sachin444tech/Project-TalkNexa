@@ -18,6 +18,15 @@ class TextToSpeechService {
     if (_initialized) return;
 
     await _flutterTts.setLanguage(_config.language);
+
+    if (_config.voice != null) {
+      final voiceSelected = await setVoice(_config.voice!);
+
+      if (!voiceSelected) {
+        await _flutterTts.setLanguage(_config.language);
+      }
+    }
+
     await _flutterTts.setSpeechRate(_config.speechRate);
     await _flutterTts.setPitch(_config.pitch);
     await _flutterTts.setVolume(_config.volume);
@@ -39,6 +48,56 @@ class TextToSpeechService {
     });
 
     _initialized = true;
+  }
+
+  Future<List<Map<String, dynamic>>> getAvailableVoices() async {
+    await initialize();
+
+    final voices = await _flutterTts.getVoices;
+
+    if (voices is! List) {
+      return [];
+    }
+
+    return voices
+        .whereType<Map>()
+        .map((voice) => Map<String, dynamic>.from(voice))
+        .toList();
+  }
+
+  Future<bool> setVoice(String voiceName) async {
+    final voices = await _flutterTts.getVoices;
+
+    if (voices is! List) {
+      return false;
+    }
+
+    final availableVoices = voices
+        .whereType<Map>()
+        .map((voice) => Map<String, dynamic>.from(voice))
+        .toList();
+
+    final matchingVoice = availableVoices
+        .cast<Map<String, dynamic>?>()
+        .firstWhere(
+          (voice) =>
+              voice?['name']?.toString().toLowerCase() ==
+                  voiceName.toLowerCase() &&
+              voice?['locale']?.toString().toLowerCase() ==
+                  _config.language.toLowerCase(),
+          orElse: () => null,
+        );
+
+    if (matchingVoice == null) {
+      return false;
+    }
+
+    await _flutterTts.setVoice({
+      'name': matchingVoice['name'],
+      'locale': matchingVoice['locale'],
+    });
+
+    return true;
   }
 
   Future<void> speak(String text) async {
