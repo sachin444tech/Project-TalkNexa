@@ -129,6 +129,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         userLevel: 'Intermediate',
       );
 
+      final requestGeneration = ++_speechGeneration;
+
       final AiResponse response = await _aiConversationService.generateResponse(
         userMessage: userText,
         context: context,
@@ -137,7 +139,11 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
       if (!mounted) return;
 
-      final speechGeneration = ++_speechGeneration;
+      if (requestGeneration != _speechGeneration) {
+        return;
+      }
+
+      final speechGeneration = requestGeneration;
 
       setState(() {
         _messages.add(
