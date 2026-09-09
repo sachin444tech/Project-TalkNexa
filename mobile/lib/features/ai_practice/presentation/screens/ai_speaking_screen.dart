@@ -65,6 +65,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
   bool _sessionEnded = false;
 
+  String? _lastFailedUserMessage;
+
   void _handleSpeechResult(String text, bool isFinal) {
     if (!mounted) return;
 
@@ -163,6 +165,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
           ),
         );
 
+        _lastFailedUserMessage = null;
+
         _latestFeedback = response.feedback;
 
         _speakingState = SpeakingState.aiSpeaking;
@@ -185,6 +189,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
       if (!mounted) return;
 
       setState(() {
+        _lastFailedUserMessage = userText;
         _speakingState = SpeakingState.idle;
       });
 
@@ -391,12 +396,41 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   void _showAiError() {
+  if (_lastFailedUserMessage == null) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Something went wrong while generating the AI response.'),
+        content: Text(
+          'Something went wrong while generating the AI response.',
+        ),
       ),
     );
+
+    return;
   }
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: const Text(
+        'Something went wrong while generating the AI response.',
+      ),
+      action: SnackBarAction(
+        label: 'Retry',
+        onPressed: () {
+          final failedMessage = _lastFailedUserMessage;
+
+          if (failedMessage == null) return;
+
+          final conversationHistory = _buildConversationHistory();
+
+          _processUserMessage(
+            failedMessage,
+            conversationHistory,
+          );
+        },
+      ),
+    ),
+  );
+}
 
   Future<void> _endSession() async {
     _timer?.cancel();
