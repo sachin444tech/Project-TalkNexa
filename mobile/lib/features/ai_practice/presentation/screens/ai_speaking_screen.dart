@@ -43,7 +43,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
   final AiConversationService _aiConversationService = AiConversationService();
 
-  late final TextToSpeechService _textToSpeechService;
+  TextToSpeechService? _textToSpeechService;
 
   final AiVoiceSelector _aiVoiceSelector = const AiVoiceSelector();
 
@@ -60,6 +60,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   int _speechGeneration = 0;
 
   bool _voiceReady = false;
+
+  bool _isProcessingResponse = false;
 
   void _handleSpeechResult(String text, bool isFinal) {
     if (!mounted) return;
@@ -112,6 +114,10 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   ) async {
     if (!mounted) return;
 
+    if (_isProcessingResponse) return;
+
+    _isProcessingResponse = true;
+
     setState(() {
       _speakingState = SpeakingState.processing;
     });
@@ -148,7 +154,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         _speakingState = SpeakingState.aiSpeaking;
       });
 
-      await _textToSpeechService.speak(response.response);
+      await _textToSpeechService!.speak(response.response);
 
       if (!mounted) return;
 
@@ -169,6 +175,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
       });
 
       _showAiError();
+    } finally {
+      _isProcessingResponse = false;
     }
   }
 
@@ -185,31 +193,27 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   Future<void> _initializeServices() async {
-  try {
-    final voiceProfile = _aiVoiceSelector.select(
-      scenario: widget.scenario,
-      difficulty: widget.difficulty,
-    );
+    try {
+      final voiceProfile = _aiVoiceSelector.select(
+        scenario: widget.scenario,
+        difficulty: widget.difficulty,
+      );
 
-    debugPrint(
-      'TalkNexa AI voice profile: ${voiceProfile.name}',
-    );
+      debugPrint('TalkNexa AI voice profile: ${voiceProfile.name}');
 
-    _textToSpeechService = TextToSpeechService(
-      config: voiceProfile.config,
-    );
+      _textToSpeechService = TextToSpeechService(config: voiceProfile.config);
 
-    await _textToSpeechService.initialize();
+      await _textToSpeechService!.initialize();
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() {
-      _voiceReady = true;
-    });
-  } catch (e) {
-    if (!mounted) return;
+      setState(() {
+        _voiceReady = true;
+      });
+    } catch (e) {
+      if (!mounted) return;
+    }
   }
-}
 
   @override
   void initState() {
@@ -283,13 +287,13 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   Future<void> _handleMic() async {
-    if(!_voiceReady){
+    if (!_voiceReady) {
       return;
     }
     if (_speakingState == SpeakingState.aiSpeaking) {
       _speechGeneration++;
 
-      await _textToSpeechService.interrupt();
+      await _textToSpeechService!.interrupt();
 
       if (!mounted) return;
 
@@ -385,7 +389,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
     _speechGeneration++;
 
-    await _textToSpeechService.interrupt();
+    await _textToSpeechService!.interrupt();
 
     if (!mounted) return;
 
@@ -416,7 +420,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
     _scrollController.dispose();
     _microphoneService.dispose();
     _speechRecognitionService.dispose();
-    _textToSpeechService.dispose();
+    _textToSpeechService?.dispose();
     super.dispose();
   }
 
@@ -513,6 +517,19 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
                 },
               ),
             ),
+
+            if (!_voiceReady)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'Preparing your AI speaking partner...',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
 
             if (_speakingState == SpeakingState.aiSpeaking)
               const Padding(
