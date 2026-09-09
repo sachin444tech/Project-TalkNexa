@@ -63,6 +63,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
   bool _isProcessingResponse = false;
 
+  bool _sessionEnded = false;
+
   void _handleSpeechResult(String text, bool isFinal) {
     if (!mounted) return;
 
@@ -395,6 +397,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
     _timer?.cancel();
 
     _speechGeneration++;
+    _sessionEnded = true;
 
     await _textToSpeechService?.interrupt();
 
