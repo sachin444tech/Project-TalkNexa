@@ -140,6 +140,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
       if (!mounted) return;
 
       if (requestGeneration != _speechGeneration) {
+        _isProcessingResponse = false;
         return;
       }
 
