@@ -396,7 +396,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
     _speechGeneration++;
 
-    await _textToSpeechService!.interrupt();
+    await _textToSpeechService?.interrupt();
 
     if (!mounted) return;
 
