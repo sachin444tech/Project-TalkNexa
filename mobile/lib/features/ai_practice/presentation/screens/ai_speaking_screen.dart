@@ -396,41 +396,42 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   void _showAiError() {
-  if (_lastFailedUserMessage == null) {
+    if (_lastFailedUserMessage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Something went wrong while generating the AI response.',
+          ),
+        ),
+      );
+
+      return;
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
+      SnackBar(
+        content: const Text(
           'Something went wrong while generating the AI response.',
+        ),
+        action: SnackBarAction(
+          label: 'Retry',
+          onPressed: () {
+            if (_sessionEnded || _isProcessingResponse) return;
+
+            final failedMessage = _lastFailedUserMessage;
+
+            if (failedMessage == null) return;
+
+            _lastFailedUserMessage = null;
+
+            final conversationHistory = _buildConversationHistory();
+
+            _processUserMessage(failedMessage, conversationHistory);
+          },
         ),
       ),
     );
-
-    return;
   }
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: const Text(
-        'Something went wrong while generating the AI response.',
-      ),
-      action: SnackBarAction(
-        label: 'Retry',
-        onPressed: () {
-          final failedMessage = _lastFailedUserMessage;
-
-          if (failedMessage == null) return;
-
-          final conversationHistory = _buildConversationHistory();
-
-          _processUserMessage(
-            failedMessage,
-            conversationHistory,
-          );
-        },
-      ),
-    ),
-  );
-}
 
   Future<void> _endSession() async {
     _timer?.cancel();
