@@ -10,11 +10,15 @@ class TextToSpeechService {
 
   bool _initialized = false;
 
+  bool _disposed = false;
+
   Completer<void>? _speechCompleter;
 
   TextToSpeechService({this._config = VoiceConfig.defaultConfig});
 
   Future<void> initialize() async {
+    if (_disposed) return;
+
     if (_initialized) return;
 
     await _flutterTts.setLanguage(_config.language);
@@ -52,6 +56,8 @@ class TextToSpeechService {
   }
 
   Future<List<Map<String, dynamic>>> getAvailableVoices() async {
+    if (_disposed) return [];
+
     await initialize();
 
     final voices = await _flutterTts.getVoices;
@@ -67,6 +73,8 @@ class TextToSpeechService {
   }
 
   Future<bool> setVoice(String voiceName) async {
+    if (_disposed) return false;
+
     try {
       final voices = await _flutterTts.getVoices;
 
@@ -106,6 +114,8 @@ class TextToSpeechService {
   }
 
   Future<void> speak(String text) async {
+    if (_disposed) return;
+
     final trimmedText = text.trim();
 
     if (trimmedText.isEmpty) return;
@@ -129,24 +139,40 @@ class TextToSpeechService {
   }
 
   Future<void> stop() async {
-    await _flutterTts.stop();
-
-    if (_speechCompleter != null && !_speechCompleter!.isCompleted) {
-      _speechCompleter!.complete();
-    }
-
+  if (_disposed) {
     _speechCompleter = null;
+    return;
   }
+
+  await _flutterTts.stop();
+
+  if (_speechCompleter != null && !_speechCompleter!.isCompleted) {
+    _speechCompleter!.complete();
+  }
+
+  _speechCompleter = null;
+}
 
   Future<void> interrupt() async {
     await stop();
   }
 
   Future<void> pause() async {
+    if (_disposed) return;
+
     await _flutterTts.pause();
   }
 
   Future<void> dispose() async {
-    await stop();
+  if (_disposed) return;
+
+  await _flutterTts.stop();
+
+  if (_speechCompleter != null && !_speechCompleter!.isCompleted) {
+    _speechCompleter!.complete();
+  }
+
+  _speechCompleter = null;
+  _disposed = true;
   }
 }
