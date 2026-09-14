@@ -67,7 +67,12 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   String? _lastFailedUserMessage;
 
   void _handleSpeechResult(String text, bool isFinal) {
-    if (!mounted || !_isScreenActive || _sessionEnded) return;
+    if (!mounted ||
+        !_isScreenActive ||
+        _sessionEnded ||
+        _isProcessingResponse) {
+      return;
+    }
 
     if (text.trim().isEmpty) {
       return;
@@ -77,11 +82,15 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
       return;
     }
 
+    if (_isProcessingResponse) {
+      return;
+    }
+
     _addUserMessage(text);
   }
 
   void _addUserMessage(String text) {
-    if (!_isScreenActive || _sessionEnded) return;
+    if (!mounted || !_isScreenActive || _sessionEnded) return;
 
     final conversationHistory = _buildConversationHistory();
 
@@ -142,9 +151,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         conversationHistory: conversationHistory,
       );
 
-      if (!mounted || !_isScreenActive) return;
-
-      if (_sessionEnded) {
+      if (!mounted || !_isScreenActive || _sessionEnded) {
         _isProcessingResponse = false;
         return;
       }
@@ -154,7 +161,9 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         return;
       }
 
-      if (!mounted || !_isScreenActive) return;
+      if (!mounted || !_isScreenActive || _sessionEnded) {
+        return;
+      }
 
       final speechGeneration = requestGeneration;
 
@@ -175,9 +184,16 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         _speakingState = SpeakingState.aiSpeaking;
       });
 
-      await _textToSpeechService!.speak(response.response);
+      try {
+        await _textToSpeechService!.speak(response.response);
+      } catch (e) {
+        _recoverToIdle();
+        return;
+      }
 
-      if (!mounted || !_isScreenActive) return;
+      if (!mounted || !_isScreenActive || _sessionEnded) {
+        return;
+      }
 
       if (speechGeneration != _speechGeneration) {
         return;
@@ -193,11 +209,9 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
     } catch (e) {
       if (!mounted || !_isScreenActive) return;
 
-      setState(() {
-        _lastFailedUserMessage = userText;
-        _speakingState = SpeakingState.idle;
-      });
+      _lastFailedUserMessage = userText;
 
+      _recoverToIdle();
       _showAiError();
     } finally {
       _isProcessingResponse = false;
@@ -329,6 +343,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         _speakingState = SpeakingState.idle;
       });
 
+      _speechGeneration++;
       await _startListening();
       return;
     }
@@ -369,8 +384,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         _speakingState = SpeakingState.listening;
       });
     } catch (e) {
-      if (!mounted) return;
-
+      _recoverToIdle();
       _showSpeechRecognitionError();
     }
   }
@@ -387,17 +401,14 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         _speakingState = SpeakingState.processing;
       });
     } catch (e) {
-      if (!mounted) return;
-
-      setState(() {
-        _speakingState = SpeakingState.idle;
-      });
-
+      _recoverToIdle();
       _showSpeechRecognitionError();
     }
   }
 
   void _showSpeechRecognitionError() {
+    if (!mounted || !_isScreenActive || _sessionEnded) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text(
@@ -408,8 +419,18 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
     );
   }
 
+  void _recoverToIdle() {
+    if (!mounted || !_isScreenActive || _sessionEnded) return;
+
+    _isProcessingResponse = false;
+
+    setState(() {
+      _speakingState = SpeakingState.idle;
+    });
+  }
+
   void _showAiError() {
-    if (!mounted || !_isScreenActive) return;
+    if (!mounted || !_isScreenActive || _sessionEnded) return;
 
     if (_lastFailedUserMessage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -431,7 +452,9 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         action: SnackBarAction(
           label: 'Retry',
           onPressed: () {
-            if (!_isScreenActive || _sessionEnded || _isProcessingResponse) return;
+            if (!_isScreenActive || _sessionEnded || _isProcessingResponse) {
+              return;
+            }
 
             final failedMessage = _lastFailedUserMessage;
 
@@ -449,10 +472,13 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   Future<void> _endSession() async {
+    if (_sessionEnded) return;
+
     _timer?.cancel();
 
     _speechGeneration++;
     _sessionEnded = true;
+    _isProcessingResponse = false;
 
     try {
       await _speechRecognitionService.stopListening();
@@ -462,7 +488,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
     await _textToSpeechService?.interrupt();
 
-    if (!mounted) return;
+    if (!mounted || !_isScreenActive) return;
 
     showDialog(
       context: context,
