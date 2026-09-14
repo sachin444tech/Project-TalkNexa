@@ -60,15 +60,14 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   int _speechGeneration = 0;
 
   bool _voiceReady = false;
-
   bool _isProcessingResponse = false;
-
   bool _sessionEnded = false;
+  bool _isScreenActive = true;
 
   String? _lastFailedUserMessage;
 
   void _handleSpeechResult(String text, bool isFinal) {
-    if (!mounted) return;
+    if (!mounted || !_isScreenActive || _sessionEnded) return;
 
     if (text.trim().isEmpty) {
       return;
@@ -82,6 +81,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   void _addUserMessage(String text) {
+    if (!_isScreenActive || _sessionEnded) return;
+
     final conversationHistory = _buildConversationHistory();
 
     setState(() {
@@ -116,7 +117,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
     String userText,
     List<Map<String, String>> conversationHistory,
   ) async {
-    if (!mounted) return;
+    if (!mounted || !_isScreenActive) return;
 
     if (_isProcessingResponse) return;
 
@@ -141,7 +142,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         conversationHistory: conversationHistory,
       );
 
-      if (!mounted) return;
+      if (!mounted || !_isScreenActive) return;
 
       if (_sessionEnded) {
         _isProcessingResponse = false;
@@ -152,6 +153,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         _isProcessingResponse = false;
         return;
       }
+
+      if (!mounted || !_isScreenActive) return;
 
       final speechGeneration = requestGeneration;
 
@@ -174,11 +177,13 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
       await _textToSpeechService!.speak(response.response);
 
-      if (!mounted) return;
+      if (!mounted || !_isScreenActive) return;
 
       if (speechGeneration != _speechGeneration) {
         return;
       }
+
+      if (!mounted || !_isScreenActive) return;
 
       _scrollToLatestMessage();
 
@@ -186,7 +191,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         _speakingState = SpeakingState.idle;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || !_isScreenActive) return;
 
       setState(() {
         _lastFailedUserMessage = userText;
@@ -212,6 +217,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   Future<void> _initializeServices() async {
+    if (!_isScreenActive || _sessionEnded) return;
+
     try {
       final voiceProfile = _aiVoiceSelector.select(
         scenario: widget.scenario,
@@ -282,7 +289,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) return;
+      if (!mounted || !_isScreenActive || _sessionEnded) return;
 
       if (_remainingSeconds <= 0) {
         _timer?.cancel();
@@ -306,6 +313,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   Future<void> _handleMic() async {
+    if (!_isScreenActive || _sessionEnded) return;
+
     if (!_voiceReady) {
       return;
     }
@@ -335,6 +344,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   Future<void> _startListening() async {
+    if (!_isScreenActive || _sessionEnded) return;
+
     try {
       final available = await _speechRecognitionService.initialize();
 
@@ -365,6 +376,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   Future<void> _stopListening() async {
+    if (!_isScreenActive || _sessionEnded) return;
+
     try {
       await _speechRecognitionService.stopListening();
 
@@ -396,6 +409,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   void _showAiError() {
+    if (!mounted || !_isScreenActive) return;
+
     if (_lastFailedUserMessage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -416,7 +431,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         action: SnackBarAction(
           label: 'Retry',
           onPressed: () {
-            if (_sessionEnded || _isProcessingResponse) return;
+            if (!_isScreenActive || _sessionEnded || _isProcessingResponse) return;
 
             final failedMessage = _lastFailedUserMessage;
 
@@ -438,6 +453,12 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
     _speechGeneration++;
     _sessionEnded = true;
+
+    try {
+      await _speechRecognitionService.stopListening();
+    } catch (e) {
+      debugPrint('Speech recognition cleanup failed: $e');
+    }
 
     await _textToSpeechService?.interrupt();
 
@@ -466,6 +487,8 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
   @override
   void dispose() {
+    _isScreenActive = false;
+
     _timer?.cancel();
     _scrollController.dispose();
     _microphoneService.dispose();
