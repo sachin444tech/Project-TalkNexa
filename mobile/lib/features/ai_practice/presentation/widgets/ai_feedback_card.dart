@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:mobile/app/theme/app_colors.dart';
-import 'package:mobile/features/ai_practice/domain/models/ai_response.dart';
-
+import 'package:mobile/features/ai_practice/domain/models/ai_feedback.dart';
 class AiFeedbackCard extends StatelessWidget {
   final AiFeedback feedback;
 

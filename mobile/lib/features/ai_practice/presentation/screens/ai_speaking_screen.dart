@@ -14,6 +14,7 @@ import 'package:mobile/features/ai_practice/presentation/widgets/ai_partner_avat
 import 'package:mobile/features/ai_practice/presentation/widgets/chat_message_bubble.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/mic_control.dart';
 import 'package:mobile/features/ai_practice/domain/models/ai_response.dart';
+import 'package:mobile/features/ai_practice/domain/models/ai_feedback.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/ai_feedback_card.dart';
 import 'package:mobile/features/ai_practice/domain/services/ai_voice_selector.dart';
 
@@ -114,7 +115,13 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   List<Map<String, String>> _buildConversationHistory() {
-    return _messages.map((message) {
+    const maxHistoryMessages = 12;
+
+    final recentMessages = _messages.length <= maxHistoryMessages
+        ? _messages
+        : _messages.sublist(_messages.length - maxHistoryMessages);
+
+    return recentMessages.map((message) {
       return {
         'role': message.isUser ? 'user' : 'assistant',
         'text': message.text,
