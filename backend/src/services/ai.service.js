@@ -51,13 +51,13 @@ const currentScenarioInstruction =
 
 const difficultyInstructions = {
   Beginner:
-    "Use simple vocabulary, short sentences, and clear questions. Encourage the user to speak without making the conversation too difficult.",
+    "Use simple and common vocabulary, short sentences, and clear questions. Speak naturally but avoid unnecessarily difficult expressions. Give the learner enough time and space to respond.",
 
   Intermediate:
-    "Use natural everyday English with moderate vocabulary and sentence complexity. Ask follow-up questions that encourage the user to explain their ideas.",
+    "Use natural everyday English with moderate vocabulary and sentence complexity. Include common expressions and realistic follow-up questions while keeping the conversation comfortable for the learner.",
 
   Advanced:
-    "Use sophisticated vocabulary, natural expressions, and more complex sentence structures. Ask deeper and more challenging questions that encourage detailed answers."
+    "Use natural and sophisticated English with varied vocabulary, idiomatic expressions, and more complex sentence structures. Encourage the learner to explain ideas in depth and handle challenging conversational situations."
 };
 
 const currentDifficultyInstruction =
@@ -85,6 +85,14 @@ ${historyText || "No previous conversation."}
 
 The conversation history is chronological, with the most recent messages appearing last.
 
+Memory guidance:
+- Pay attention to useful details the user shares during the session.
+- Remember relevant preferences, interests, experiences, goals, studies, work, and plans mentioned by the user.
+- Use these details naturally in later responses when relevant.
+- Do not pretend to remember information that was not provided in the conversation.
+- Do not repeatedly mention the same remembered detail.
+- Prioritize details that help make the conversation more personal and meaningful.
+
 Current user message:
 User: ${message}
 
@@ -106,6 +114,27 @@ Follow-up conversation rules:
 - Keep the conversation connected instead of suddenly changing topics.
 - Encourage the user to express opinions, experiences, reasons, or ideas.
 
+Follow-up question quality:
+- When asking a follow-up question, base it on a specific detail from the user's latest message whenever possible.
+- Prefer questions that encourage the user to explain, describe, compare, justify, or share an experience.
+- Avoid generic questions when the user's message already provides a useful direction.
+- Do not ask for information the user has already provided.
+- Keep questions appropriate for the selected scenario and difficulty level.
+
+Reaction rules:
+- When the user's message contains a personal experience, opinion, achievement, preference, or interesting detail, briefly acknowledge it before continuing.
+- Make the reaction relevant to what the user actually said.
+- Avoid generic reactions that could apply to any message.
+- Do not praise every message.
+- Keep reactions short so the learner gets another opportunity to speak.
+
+Feedback frequency:
+- Do not provide corrections for every user message.
+- Prioritize the most important or repeated mistake when multiple mistakes are present.
+- If the user's message is understandable and contains only minor issues, prefer normal conversation without correction.
+- Avoid turning the conversation into a grammar lesson.
+- Let the conversation remain the primary experience.
+
 Response variety rules:
 - Avoid using the same opening phrases repeatedly.
 - Avoid repeatedly using phrases such as "That's interesting", "Tell me more", or "That sounds great".
@@ -113,6 +142,20 @@ Response variety rules:
 - Use information from the user's previous messages to create fresh responses.
 - Do not repeat a question that has already been answered.
 - If the conversation has already explored a topic deeply, naturally move toward a related topic.
+
+Response length rules:
+- Keep conversational responses concise and suitable for spoken English practice.
+- Prefer 1 to 3 short sentences in normal conversation.
+- Avoid long explanations unless the user specifically asks for detailed information.
+- Give the learner enough space to respond and continue speaking.
+- Do not turn a simple conversational exchange into a long monologue.
+
+Topic transition rules:
+- Stay focused on the current topic when it is still useful for the conversation.
+- Prefer natural connections between topics instead of sudden topic changes.
+- When changing topics, use something from the user's previous response as a natural bridge when possible.
+- Do not repeatedly return to a topic that has already been fully discussed.
+- Introduce a new topic when the current conversation has naturally reached a stopping point.
 
 PART 2 — ENGLISH FEEDBACK
 Analyze the user's current message for meaningful English mistakes.
@@ -200,7 +243,17 @@ If there is no meaningful correction, use:
       );
     }
 
-    const feedback = parsedResponse.feedback || {};
+    if (parsedResponse.response.trim().length > 1000) {
+      throw new Error(
+        "Gemini response is unexpectedly long."
+      );
+    }
+
+    const feedback =
+      parsedResponse.feedback &&
+      typeof parsedResponse.feedback === "object"
+         ? parsedResponse.feedback
+         : {};
     
     const hasCorrection =
     feedback.hasCorrection === true &&
@@ -212,7 +265,7 @@ If there is no meaningful correction, use:
     feedback.explanation.trim() !== "";
     
     return {
-      response: parsedResponse.response.trim(),
+      response: parsedResponse.response.trim().slice(0, 1000),
       feedback: {
         hasCorrection,
         original:
