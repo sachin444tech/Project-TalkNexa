@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/features/ai_practice/domain/models/ai_conversation_context.dart';
 import 'package:mobile/features/ai_practice/domain/models/chat_message.dart';
+import 'package:mobile/features/ai_practice/domain/models/speaking_session_metrics.dart';
 import 'package:mobile/features/ai_practice/domain/models/speaking_state.dart';
 import 'package:mobile/features/ai_practice/domain/services/ai_conversation_service.dart';
 import 'package:mobile/features/ai_practice/domain/services/microphone_service.dart';
@@ -13,6 +14,7 @@ import 'package:mobile/features/ai_practice/domain/services/text_to_speech_servi
 import 'package:mobile/features/ai_practice/presentation/widgets/ai_partner_avatar.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/chat_message_bubble.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/mic_control.dart';
+import 'package:mobile/features/ai_practice/presentation/widgets/session_summary_card.dart';
 import 'package:mobile/features/ai_practice/domain/models/ai_response.dart';
 import 'package:mobile/features/ai_practice/domain/models/ai_feedback.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/ai_feedback_card.dart';
@@ -49,6 +51,24 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   final AiVoiceSelector _aiVoiceSelector = const AiVoiceSelector();
 
   final List<ChatMessage> _messages = [];
+
+  int _spokenTurnCount = 0;
+  int _spokenWordCount = 0;
+  int _correctedTurnCount = 0;
+  double? _finalSessionScore;
+  SpeakingSessionMetrics? _finalSessionMetrics;
+
+  SpeakingSessionMetrics get _sessionMetrics {
+    final totalDurationSeconds = widget.duration * 60;
+    final elapsedSeconds = totalDurationSeconds - _remainingSeconds;
+
+    return SpeakingSessionMetrics(
+      spokenTurnCount: _spokenTurnCount,
+      spokenWordCount: _spokenWordCount,
+      correctedTurnCount: _correctedTurnCount,
+      durationSeconds: elapsedSeconds.clamp(0, totalDurationSeconds),
+    );
+  }
 
   AiFeedback? _latestFeedback;
 
@@ -101,9 +121,13 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           text: text,
           sender: MessageSender.user,
+          source: MessageSource.speech,
           timestamp: DateTime.now(),
         ),
       );
+
+      _spokenTurnCount++;
+      _spokenWordCount += text.trim().split(RegExp(r'\s+')).length;
 
       _latestFeedback = null;
       _speakingState = SpeakingState.processing;
@@ -122,10 +146,13 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         : _messages.sublist(_messages.length - maxHistoryMessages);
 
     return recentMessages.map((message) {
-      return {
-        'role': message.isUser ? 'user' : 'assistant',
-        'text': message.text,
+      final role = switch (message.source) {
+        MessageSource.ai => 'assistant',
+        MessageSource.speech => 'user',
+        MessageSource.text => 'user',
       };
+
+      return {'role': role, 'text': message.text};
     }).toList();
   }
 
@@ -180,6 +207,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
             id: DateTime.now().millisecondsSinceEpoch.toString(),
             text: response.response,
             sender: MessageSender.ai,
+            source: MessageSource.ai,
             timestamp: DateTime.now(),
           ),
         );
@@ -187,6 +215,10 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         _lastFailedUserMessage = null;
 
         _latestFeedback = response.feedback;
+
+        if (response.feedback.hasCorrection) {
+          _correctedTurnCount++;
+        }
 
         _speakingState = SpeakingState.aiSpeaking;
       });
@@ -281,6 +313,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         text: _getOpeningMessage(),
         sender: MessageSender.ai,
+        source: MessageSource.ai,
         timestamp: DateTime.now(),
       ),
     );
@@ -483,6 +516,21 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
 
     _timer?.cancel();
 
+    final sessionMetrics = _sessionMetrics;
+    final sessionScore = sessionMetrics.accuracyScore;
+
+    _finalSessionMetrics = sessionMetrics;
+    _finalSessionScore = sessionScore;
+
+    debugPrint(
+      'TalkNexa session metrics: '
+      'turns=${sessionMetrics.spokenTurnCount}, '
+      'words=${sessionMetrics.spokenWordCount}, '
+      'corrected=${sessionMetrics.correctedTurnCount}, '
+      'duration=${sessionMetrics.durationSeconds}s, '
+      'score=${sessionScore.toStringAsFixed(1)}',
+    );
+
     _speechGeneration++;
     _sessionEnded = true;
     _isProcessingResponse = false;
@@ -501,22 +549,41 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Session Complete 🎉'),
-          content: const Text('Great job! Your speaking session has ended.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              },
-              child: const Text('Done'),
-            ),
-          ],
-        );
-      },
+        final metrics = _finalSessionMetrics;
+        
+        if (metrics == null) {
+          return const AlertDialog(
+            title: Text('Session Complete 🎉'),
+            content: Text('Your speaking session has ended.'),
+      );
+    }
+
+    return AlertDialog(
+      title: const Text(
+        'Session Complete 🎉',
+        style: TextStyle(fontWeight: FontWeight.w800),
+      ),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: SessionSummaryCard(
+            metrics: metrics,
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            Navigator.pop(context);
+          },
+          child: const Text('Done'),
+        ),
+      ],
     );
-  }
+  },
+);
+}
 
   @override
   void dispose() {
