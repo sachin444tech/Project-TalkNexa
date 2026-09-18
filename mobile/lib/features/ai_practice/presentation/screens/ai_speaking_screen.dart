@@ -7,6 +7,7 @@ import 'package:mobile/features/ai_practice/domain/models/ai_conversation_contex
 import 'package:mobile/features/ai_practice/domain/models/chat_message.dart';
 import 'package:mobile/features/ai_practice/domain/models/speaking_session_metrics.dart';
 import 'package:mobile/features/ai_practice/domain/models/speaking_state.dart';
+import 'package:mobile/features/ai_practice/domain/models/speaking_session_result.dart';
 import 'package:mobile/features/ai_practice/domain/services/ai_conversation_service.dart';
 import 'package:mobile/features/ai_practice/domain/services/microphone_service.dart';
 import 'package:mobile/features/ai_practice/domain/services/speech_recognition_service.dart';
@@ -19,6 +20,8 @@ import 'package:mobile/features/ai_practice/domain/models/ai_response.dart';
 import 'package:mobile/features/ai_practice/domain/models/ai_feedback.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/ai_feedback_card.dart';
 import 'package:mobile/features/ai_practice/domain/services/ai_voice_selector.dart';
+import 'package:mobile/features/ai_practice/domain/repositories/speaking_session_repository.dart';
+import 'package:mobile/features/ai_practice/data/repositories/ai_practice_repository_provider.dart';
 
 class AiSpeakingScreen extends StatefulWidget {
   final String scenario;
@@ -44,6 +47,9 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   final SpeechRecognitionService _speechRecognitionService =
       SpeechRecognitionService();
 
+  final SpeakingSessionRepository _sessionRepository =
+    AiPracticeRepositoryProvider.speakingSessionRepository;
+
   final AiConversationService _aiConversationService = AiConversationService();
 
   TextToSpeechService? _textToSpeechService;
@@ -57,6 +63,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   int _correctedTurnCount = 0;
   double? _finalSessionScore;
   SpeakingSessionMetrics? _finalSessionMetrics;
+  SpeakingSessionResult? _finalSessionResult;
 
   SpeakingSessionMetrics get _sessionMetrics {
     final totalDurationSeconds = widget.duration * 60;
@@ -511,16 +518,31 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
     );
   }
 
+  SpeakingSessionResult _buildSessionResult() {
+  return SpeakingSessionResult(
+    id: DateTime.now().millisecondsSinceEpoch.toString(),
+    scenario: widget.scenario,
+    difficulty: widget.difficulty,
+    metrics: _sessionMetrics,
+    completedAt: DateTime.now(),
+  );
+}
+
+Future<List<SpeakingSessionResult>> _loadSessionHistory() {
+  return _sessionRepository.getSessions();
+}
+
   Future<void> _endSession() async {
-    if (_sessionEnded) return;
+  if (_sessionEnded) return;
 
-    _timer?.cancel();
+  _timer?.cancel();
 
-    final sessionMetrics = _sessionMetrics;
-    final sessionScore = sessionMetrics.accuracyScore;
+  final sessionResult = _buildSessionResult();
+  final sessionMetrics = sessionResult.metrics;
+  final sessionScore = sessionMetrics.accuracyScore;
 
-    _finalSessionMetrics = sessionMetrics;
-    _finalSessionScore = sessionScore;
+  _finalSessionResult = sessionResult;
+  await _sessionRepository.saveSession(sessionResult);
 
     debugPrint(
       'TalkNexa session metrics: '
