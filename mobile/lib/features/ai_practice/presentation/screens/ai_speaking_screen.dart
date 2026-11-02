@@ -48,7 +48,7 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
       SpeechRecognitionService();
 
   final SpeakingSessionRepository _sessionRepository =
-    AiPracticeRepositoryProvider.speakingSessionRepository;
+      AiPracticeRepositoryProvider.speakingSessionRepository;
 
   final AiConversationService _aiConversationService = AiConversationService();
 
@@ -519,31 +519,39 @@ class _AiSpeakingScreenState extends State<AiSpeakingScreen> {
   }
 
   SpeakingSessionResult _buildSessionResult() {
-  return SpeakingSessionResult(
-    id: DateTime.now().millisecondsSinceEpoch.toString(),
-    scenario: widget.scenario,
-    difficulty: widget.difficulty,
-    metrics: _sessionMetrics,
-    completedAt: DateTime.now(),
-  );
-}
+    return SpeakingSessionResult(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      scenario: widget.scenario,
+      difficulty: widget.difficulty,
+      metrics: _sessionMetrics,
+      completedAt: DateTime.now(),
+    );
+  }
 
-Future<List<SpeakingSessionResult>> _loadSessionHistory() {
-  return _sessionRepository.getSessions();
-}
+  Future<List<SpeakingSessionResult>> _loadSessionHistory() {
+    return _sessionRepository.getSessions();
+  }
 
   Future<void> _endSession() async {
-  if (_sessionEnded) return;
+    if (_sessionEnded) return;
 
-  _timer?.cancel();
+    _timer?.cancel();
 
-  final sessionResult = _buildSessionResult();
-  final sessionMetrics = sessionResult.metrics;
-  final sessionScore = sessionMetrics.accuracyScore;
+    final sessionResult = _buildSessionResult();
+    final sessionMetrics = sessionResult.metrics;
+    final sessionScore = sessionMetrics.accuracyScore;
 
-  _finalSessionResult = sessionResult;
-  await _sessionRepository.saveSession(sessionResult);
+    _finalSessionResult = sessionResult;
+    _finalSessionMetrics = sessionMetrics;
+    _finalSessionScore = sessionScore;
 
+    try {
+      await _sessionRepository.saveSession(sessionResult);
+      debugPrint('Speaking session saved successfully.');
+    } catch (error, stackTrace) {
+      debugPrint('Failed to save speaking session: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
     debugPrint(
       'TalkNexa session metrics: '
       'turns=${sessionMetrics.spokenTurnCount}, '
@@ -572,40 +580,38 @@ Future<List<SpeakingSessionResult>> _loadSessionHistory() {
       barrierDismissible: false,
       builder: (context) {
         final metrics = _finalSessionMetrics;
-        
+
         if (metrics == null) {
           return const AlertDialog(
             title: Text('Session Complete 🎉'),
             content: Text('Your speaking session has ended.'),
-      );
-    }
+          );
+        }
 
-    return AlertDialog(
-      title: const Text(
-        'Session Complete 🎉',
-        style: TextStyle(fontWeight: FontWeight.w800),
-      ),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: SingleChildScrollView(
-          child: SessionSummaryCard(
-            metrics: metrics,
+        return AlertDialog(
+          title: const Text(
+            'Session Complete 🎉',
+            style: TextStyle(fontWeight: FontWeight.w800),
           ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-            Navigator.pop(context);
-          },
-          child: const Text('Done'),
-        ),
-      ],
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: SessionSummaryCard(metrics: metrics),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              child: const Text('Done'),
+            ),
+          ],
+        );
+      },
     );
-  },
-);
-}
+  }
 
   @override
   void dispose() {

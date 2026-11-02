@@ -1,9 +1,9 @@
-import 'in_memory_speaking_session_repository.dart';
+import 'package:mobile/features/ai_practice/data/repositories/firestore_speaking_session_repository.dart';
+import 'package:mobile/features/ai_practice/domain/repositories/speaking_session_repository.dart';
 
 class AiPracticeRepositoryProvider {
   AiPracticeRepositoryProvider._();
 
-  static final InMemorySpeakingSessionRepository
-      speakingSessionRepository =
-      InMemorySpeakingSessionRepository();
+  static final SpeakingSessionRepository speakingSessionRepository =
+      FirestoreSpeakingSessionRepository();
 }
