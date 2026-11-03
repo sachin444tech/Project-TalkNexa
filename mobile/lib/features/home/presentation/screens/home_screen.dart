@@ -1,6 +1,8 @@
+
 import 'package:flutter/material.dart';
 
 import 'package:mobile/features/ai_practice/presentation/screens/ai_practice_setup_screen.dart';
+import 'package:mobile/features/ai_practice/presentation/screens/speaking_history_screen.dart';
 import 'package:mobile/features/home/presentation/widgets/achievement_preview.dart';
 import 'package:mobile/features/home/presentation/widgets/daily_goal_card.dart';
 import 'package:mobile/features/home/presentation/widgets/home_header.dart';
@@ -16,6 +18,15 @@ class HomeScreen extends StatelessWidget {
       SnackBar(
         content: Text('$feature is coming soon.'),
         behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _openSpeakingHistory(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const SpeakingHistoryScreen(),
       ),
     );
   }
@@ -50,14 +61,20 @@ class HomeScreen extends StatelessWidget {
 
                   const Text(
                     'Practice your way',
-                    style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
+                    style: TextStyle(
+                      fontSize: 21,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
 
                   const SizedBox(height: 6),
 
                   const Text(
                     'Choose the experience that fits your goal.',
-                    style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF6B7280),
+                    ),
                   ),
 
                   const SizedBox(height: 16),
@@ -78,7 +95,8 @@ class HomeScreen extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const AiPracticeSetupScreen(),
+                                builder: (_) =>
+                                    const AiPracticeSetupScreen(),
                               ),
                             );
                           },
@@ -102,6 +120,71 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Speaking History card
+                  InkWell(
+                    onTap: () => _openSpeakingHistory(context),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFFE2E8F0),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: const Icon(
+                              Icons.history_rounded,
+                              color: Color(0xFF2563EB),
+                              size: 26,
+                            ),
+                          ),
+
+                          const SizedBox(width: 14),
+
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Speaking History',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                SizedBox(height: 5),
+                                Text(
+                                  'Review your previous AI speaking sessions.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 16,
+                            color: Color(0xFF64748B),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
 
                   const SizedBox(height: 28),
