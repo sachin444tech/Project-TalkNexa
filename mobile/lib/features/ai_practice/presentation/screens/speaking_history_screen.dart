@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/features/ai_practice/data/repositories/ai_practice_repository_provider.dart';
 import 'package:mobile/features/ai_practice/domain/models/speaking_session_result.dart';
 import 'package:mobile/features/ai_practice/domain/repositories/speaking_session_repository.dart';
+import 'package:mobile/features/ai_practice/presentation/screens/speaking_session_details_screen.dart';
 
 class SpeakingHistoryScreen extends StatefulWidget {
   const SpeakingHistoryScreen({super.key});
@@ -148,90 +149,106 @@ class _SpeakingHistoryScreenState extends State<SpeakingHistoryScreen> {
     );
   }
 
-  Widget _buildSessionCard(SpeakingSessionResult session) {
-    final score = session.metrics.accuracyScore;
+Widget _buildSessionCard(SpeakingSessionResult session) {
+  final score = session.metrics.accuracyScore;
 
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFE2E8F0),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  session.scenario,
-                  style: const TextStyle(
-                    color: Color(0xFF0F172A),
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 7,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${score.toStringAsFixed(0)}/100',
-                  style: const TextStyle(
-                    color: Color(0xFF2563EB),
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 8),
-
-          Text(
-            '${session.difficulty} • ${_formatDate(session.completedAt)}',
-            style: const TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 13,
+  return Material(
+    color: Colors.transparent,
+    child: InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SpeakingSessionDetailsScreen(
+              session: session,
             ),
           ),
-
-          const SizedBox(height: 18),
-
-          Row(
-            children: [
-              _buildMetric(
-                Icons.timer_outlined,
-                _formatDuration(session.metrics.durationSeconds),
-                'Duration',
-              ),
-              const SizedBox(width: 20),
-              _buildMetric(
-                Icons.record_voice_over_rounded,
-                '${session.metrics.spokenWordCount}',
-                'Words spoken',
-              ),
-              const SizedBox(width: 20),
-              _buildMetric(
-                Icons.chat_bubble_outline_rounded,
-                '${session.metrics.spokenTurnCount}',
-                'Turns',
-              ),
-            ],
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: const Color(0xFFE2E8F0),
           ),
-        ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    session.scenario,
+                    style: const TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${score.toStringAsFixed(0)}/100',
+                    style: const TextStyle(
+                      color: Color(0xFF2563EB),
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              '${session.difficulty} • ${_formatDate(session.completedAt)}',
+              style: const TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 13,
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            Row(
+              children: [
+                _buildMetric(
+                  Icons.timer_outlined,
+                  _formatDuration(session.metrics.durationSeconds),
+                  'Duration',
+                ),
+                const SizedBox(width: 20),
+                _buildMetric(
+                  Icons.record_voice_over_rounded,
+                  '${session.metrics.spokenWordCount}',
+                  'Words spoken',
+                ),
+                const SizedBox(width: 20),
+                _buildMetric(
+                  Icons.chat_bubble_outline_rounded,
+                  '${session.metrics.spokenTurnCount}',
+                  'Turns',
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildMetric(
     IconData icon,
