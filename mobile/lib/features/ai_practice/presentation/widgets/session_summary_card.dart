@@ -13,7 +13,7 @@ class SessionSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final score = metrics.accuracyScore;
+    final score = metrics.practiceScore;
 
     return Container(
       width: double.infinity,
@@ -51,16 +51,16 @@ class SessionSummaryCard extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  '${score.toStringAsFixed(0)}%',
+                  '${score.toStringAsFixed(0)}/100',
                   style: const TextStyle(
                     fontSize: 42,
-                    fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w900,
                     color: AppColors.primary,
                   ),
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  'Speaking Accuracy',
+                  'Practice Engagement Score',
                   style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -113,7 +113,7 @@ class SessionSummaryCard extends StatelessWidget {
             ],
           ),
         ],
-      ),
+       ),
     );
   }
 

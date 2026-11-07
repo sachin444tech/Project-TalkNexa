@@ -39,7 +39,7 @@ class SpeakingSessionDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final metrics = session.metrics;
-    final score = metrics.accuracyScore;
+    final score = metrics.practiceScore;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),

@@ -1,3 +1,4 @@
+
 class SpeakingSessionMetrics {
   final int spokenTurnCount;
   final int spokenWordCount;
@@ -11,16 +12,30 @@ class SpeakingSessionMetrics {
     required this.durationSeconds,
   });
 
-  double get accuracyScore {
-  if (spokenTurnCount == 0) {
-    return 0;
+  /// Measures participation in a speaking practice session.
+  ///
+  /// This is NOT an English proficiency or grammar accuracy score.
+  /// Maximum score: 100.
+  double get practiceScore {
+    // Maximum 40 points for speaking turns.
+    final turnScore =
+        (spokenTurnCount / 10).clamp(0.0, 1.0) * 40;
+
+    // Maximum 40 points for words spoken.
+    final wordScore =
+        (spokenWordCount / 150).clamp(0.0, 1.0) * 40;
+
+    // Maximum 20 points for session duration.
+    final durationScore =
+        (durationSeconds / 300).clamp(0.0, 1.0) * 20;
+
+    return (turnScore + wordScore + durationScore)
+        .clamp(0.0, 100.0);
   }
 
-  final correctionRate = correctedTurnCount / spokenTurnCount;
-  final baseScore = 100 - (correctionRate * 100);
-
-  final participationBonus = spokenTurnCount >= 5 ? 5 : 0;
-
-  return (baseScore + participationBonus).clamp(0, 100);
-  }
+  /// Temporary compatibility getter for existing screens and code.
+  ///
+  /// Use practiceScore in new code.
+  @Deprecated('Use practiceScore instead.')
+  double get accuracyScore => practiceScore;
 }

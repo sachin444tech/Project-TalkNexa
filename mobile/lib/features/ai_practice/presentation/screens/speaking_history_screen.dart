@@ -150,7 +150,7 @@ class _SpeakingHistoryScreenState extends State<SpeakingHistoryScreen> {
   }
 
 Widget _buildSessionCard(SpeakingSessionResult session) {
-  final score = session.metrics.accuracyScore;
+  final score = session.metrics.practiceScore;
 
   return Material(
     color: Colors.transparent,
