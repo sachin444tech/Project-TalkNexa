@@ -6,6 +6,7 @@ import 'package:mobile/features/ai_practice/domain/repositories/speaking_session
 import 'package:mobile/features/ai_practice/presentation/screens/speaking_session_details_screen.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/speaking_progress_chart.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/speaking_progress_insights.dart';
+import 'package:mobile/features/ai_practice/presentation/widgets/speaking_streak_card.dart';
 
 class SpeakingHistoryScreen extends StatefulWidget {
   const SpeakingHistoryScreen({super.key});
@@ -98,6 +99,9 @@ class _SpeakingHistoryScreenState extends State<SpeakingHistoryScreen> {
                 const SizedBox(height: 24),
 
                 SpeakingProgressInsights(sessions: sessions),
+                const SizedBox(height: 24),
+
+                SpeakingStreakCard(sessions: sessions),
                 const SizedBox(height: 24),
 
                 ...sessions.map(
