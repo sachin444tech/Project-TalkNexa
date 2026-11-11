@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import 'package:mobile/features/ai_practice/data/repositories/ai_practice_repository_provider.dart';
@@ -10,8 +9,7 @@ class SpeakingHistoryScreen extends StatefulWidget {
   const SpeakingHistoryScreen({super.key});
 
   @override
-  State<SpeakingHistoryScreen> createState() =>
-      _SpeakingHistoryScreenState();
+  State<SpeakingHistoryScreen> createState() => _SpeakingHistoryScreenState();
 }
 
 class _SpeakingHistoryScreenState extends State<SpeakingHistoryScreen> {
@@ -69,9 +67,7 @@ class _SpeakingHistoryScreenState extends State<SpeakingHistoryScreen> {
         future: _sessionsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (snapshot.hasError) {
@@ -91,7 +87,10 @@ class _SpeakingHistoryScreenState extends State<SpeakingHistoryScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               children: [
                 _buildHeader(sessions.length),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
+
+                _buildProgressOverview(sessions),
+                const SizedBox(height: 24),
 
                 ...sessions.map(
                   (session) => Padding(
@@ -112,21 +111,14 @@ class _SpeakingHistoryScreenState extends State<SpeakingHistoryScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF2563EB),
-            Color(0xFF7C3AED),
-          ],
+          colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
         ),
         borderRadius: BorderRadius.circular(22),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.auto_awesome_rounded,
-            color: Colors.white,
-            size: 30,
-          ),
+          const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 30),
           const SizedBox(height: 12),
           const Text(
             'Your speaking journey',
@@ -139,131 +131,240 @@ class _SpeakingHistoryScreenState extends State<SpeakingHistoryScreen> {
           const SizedBox(height: 6),
           Text(
             '$sessionCount completed ${sessionCount == 1 ? 'session' : 'sessions'}',
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
-            ),
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
         ],
       ),
     );
   }
 
-Widget _buildSessionCard(SpeakingSessionResult session) {
-  final score = session.metrics.practiceScore;
+  Widget _buildProgressOverview(List<SpeakingSessionResult> sessions) {
+    final totalWords = sessions.fold<int>(
+      0,
+      (total, session) => total + session.metrics.spokenWordCount,
+    );
 
-  return Material(
-    color: Colors.transparent,
-    child: InkWell(
-      borderRadius: BorderRadius.circular(20),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => SpeakingSessionDetailsScreen(
-              session: session,
-            ),
-          ),
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: const Color(0xFFE2E8F0),
+    final totalDuration = sessions.fold<int>(
+      0,
+      (total, session) => total + session.metrics.durationSeconds,
+    );
+
+    final totalScore = sessions.fold<double>(
+      0,
+      (total, session) => total + session.metrics.practiceScore,
+    );
+
+    final averageScore = totalScore / sessions.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Your Overall Progress',
+          style: TextStyle(
+            fontSize: 19,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF0F172A),
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        const SizedBox(height: 14),
+
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 1.65,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    session.scenario,
-                    style: const TextStyle(
-                      color: Color(0xFF0F172A),
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${score.toStringAsFixed(0)}/100',
-                    style: const TextStyle(
-                      color: Color(0xFF2563EB),
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ],
+            _buildProgressStat(
+              Icons.forum_rounded,
+              'Sessions',
+              '${sessions.length}',
+              const Color(0xFF2563EB),
             ),
-
-            const SizedBox(height: 8),
-
-            Text(
-              '${session.difficulty} • ${_formatDate(session.completedAt)}',
-              style: const TextStyle(
-                color: Color(0xFF64748B),
-                fontSize: 13,
-              ),
+            _buildProgressStat(
+              Icons.timer_rounded,
+              'Practice Time',
+              _formatTotalDuration(totalDuration),
+              const Color(0xFF7C3AED),
             ),
-
-            const SizedBox(height: 18),
-
-            Row(
-              children: [
-                _buildMetric(
-                  Icons.timer_outlined,
-                  _formatDuration(session.metrics.durationSeconds),
-                  'Duration',
-                ),
-                const SizedBox(width: 20),
-                _buildMetric(
-                  Icons.record_voice_over_rounded,
-                  '${session.metrics.spokenWordCount}',
-                  'Words spoken',
-                ),
-                const SizedBox(width: 20),
-                _buildMetric(
-                  Icons.chat_bubble_outline_rounded,
-                  '${session.metrics.spokenTurnCount}',
-                  'Turns',
-                ),
-              ],
+            _buildProgressStat(
+              Icons.record_voice_over_rounded,
+              'Words Spoken',
+              totalWords.toString(),
+              const Color(0xFF0891B2),
+            ),
+            _buildProgressStat(
+              Icons.trending_up_rounded,
+              'Average Score',
+              '${averageScore.toStringAsFixed(0)}/100',
+              const Color(0xFF16A34A),
             ),
           ],
         ),
-      ),
-    ),
-  );
-}
+      ],
+    );
+  }
 
-  Widget _buildMetric(
+  Widget _buildProgressStat(
     IconData icon,
-    String value,
     String label,
+    String value,
+    Color color,
   ) {
+    return Container(
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Icon(icon, color: color, size: 22),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatTotalDuration(int seconds) {
+    final hours = seconds ~/ 3600;
+    final minutes = (seconds % 3600) ~/ 60;
+
+    if (hours > 0) {
+      return '${hours}h ${minutes}m';
+    }
+
+    return '${minutes}m';
+  }
+
+  Widget _buildSessionCard(SpeakingSessionResult session) {
+    final score = session.metrics.practiceScore;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => SpeakingSessionDetailsScreen(session: session),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      session.scenario,
+                      style: const TextStyle(
+                        color: Color(0xFF0F172A),
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${score.toStringAsFixed(0)}/100',
+                      style: const TextStyle(
+                        color: Color(0xFF2563EB),
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 8),
+
+              Text(
+                '${session.difficulty} • ${_formatDate(session.completedAt)}',
+                style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+              ),
+
+              const SizedBox(height: 18),
+
+              Row(
+                children: [
+                  _buildMetric(
+                    Icons.timer_outlined,
+                    _formatDuration(session.metrics.durationSeconds),
+                    'Duration',
+                  ),
+                  const SizedBox(width: 20),
+                  _buildMetric(
+                    Icons.record_voice_over_rounded,
+                    '${session.metrics.spokenWordCount}',
+                    'Words spoken',
+                  ),
+                  const SizedBox(width: 20),
+                  _buildMetric(
+                    Icons.chat_bubble_outline_rounded,
+                    '${session.metrics.spokenTurnCount}',
+                    'Turns',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetric(IconData icon, String value, String label) {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            color: const Color(0xFF64748B),
-            size: 19,
-          ),
+          Icon(icon, color: const Color(0xFF64748B), size: 19),
           const SizedBox(height: 7),
           Text(
             value,
@@ -276,10 +377,7 @@ Widget _buildSessionCard(SpeakingSessionResult session) {
           const SizedBox(height: 3),
           Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 11,
-            ),
+            style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
           ),
         ],
       ),
@@ -302,19 +400,14 @@ Widget _buildSessionCard(SpeakingSessionResult session) {
             const Text(
               'No speaking sessions yet',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
             const Text(
               'Complete your first AI speaking session '
               'and your progress will appear here.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Color(0xFF64748B),
-              ),
+              style: TextStyle(color: Color(0xFF64748B)),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
@@ -343,10 +436,7 @@ Widget _buildSessionCard(SpeakingSessionResult session) {
             const Text(
               'Unable to load speaking history',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 12),
             ElevatedButton(
