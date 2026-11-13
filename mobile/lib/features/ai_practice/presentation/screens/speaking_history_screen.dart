@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:mobile/features/ai_practice/data/repositories/ai_practice_repository_provider.dart';
 import 'package:mobile/features/ai_practice/domain/models/speaking_session_result.dart';
+import 'package:mobile/features/ai_practice/domain/models/spealking_history_filter.dart';
 import 'package:mobile/features/ai_practice/domain/repositories/speaking_session_repository.dart';
 import 'package:mobile/features/ai_practice/presentation/screens/speaking_session_details_screen.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/speaking_progress_chart.dart';
@@ -12,6 +13,8 @@ import 'package:mobile/features/ai_practice/presentation/widgets/speaking_achiev
 import 'package:mobile/features/ai_practice/presentation/widgets/speaking_challenges_card.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/scenario_progress_card.dart';
 import 'package:mobile/features/ai_practice/presentation/widgets/scenario_recommendations_card.dart';
+import 'package:mobile/features/ai_practice/domain/services/speaking_history_filter_service.dart';
+import 'package:mobile/features/ai_practice/presentation/widgets/speaking_history_filter_bar.dart';
 
 class SpeakingHistoryScreen extends StatefulWidget {
   const SpeakingHistoryScreen({super.key});
@@ -21,6 +24,11 @@ class SpeakingHistoryScreen extends StatefulWidget {
 }
 
 class _SpeakingHistoryScreenState extends State<SpeakingHistoryScreen> {
+  SpeakingHistoryFilter _selectedFilter = SpeakingHistoryFilter.all;
+
+  final SpeakingHistoryFilterService _filterService =
+      const SpeakingHistoryFilterService();
+
   final SpeakingSessionRepository _repository =
       AiPracticeRepositoryProvider.speakingSessionRepository;
 
@@ -84,6 +92,11 @@ class _SpeakingHistoryScreenState extends State<SpeakingHistoryScreen> {
 
           final sessions = snapshot.data ?? [];
 
+          final filteredSessions = _filterService.filterSessions(
+            sessions: sessions,
+            filter: _selectedFilter,
+          );
+
           if (sessions.isEmpty) {
             return _buildEmptyState();
           }
@@ -124,12 +137,52 @@ class _SpeakingHistoryScreenState extends State<SpeakingHistoryScreen> {
                 ScenarioRecommendationsCard(sessions: sessions),
                 const SizedBox(height: 24),
 
-                ...sessions.map(
-                  (session) => Padding(
-                    padding: const EdgeInsets.only(bottom: 14),
-                    child: _buildSessionCard(session),
+                const SizedBox(height: 8),
+
+                const Text(
+                  'Your Sessions',
+                  style: TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F172A),
                   ),
                 ),
+
+                const SizedBox(height: 14),
+
+                SpeakingHistoryFilterBar(
+                  selectedFilter: _selectedFilter,
+                  onFilterChanged: (filter) {
+                    setState(() {
+                      _selectedFilter = filter;
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 18),
+
+                if (filteredSessions.isEmpty)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: const Text(
+                      'No sessions found for this scenario yet.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                    ),
+                  )
+                else
+                  ...filteredSessions.map(
+                    (session) => Padding(
+                      padding: const EdgeInsets.only(bottom: 14),
+                      child: _buildSessionCard(session),
+                    ),
+                  ),
               ],
             ),
           );
